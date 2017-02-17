@@ -17,6 +17,10 @@ class BPPTokenTree
         void metaSetup();
     protected:
     private:
+        /*
+        std::vector<std::string,BPPTVar*> variables; <- for version 0.2
+        std::vector<std::String,BPPTVar*> functions; <- for version 0.2
+        */
          BPPTNode* root; //!< Member variable "root"
          BPPError error;
 };

@@ -1,5 +1,6 @@
 import native iostream
-w(something:int):what
-	h:t=2
 main(charnum:int):int
-	h:t=5
+	h:t =|
+	5
+	return |
+4

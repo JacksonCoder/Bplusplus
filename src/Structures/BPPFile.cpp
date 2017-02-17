@@ -26,8 +26,9 @@ void BPPFile::read(std::string filename)
             }
             std::string buffer;
             getline(stream,buffer);
-            if(buffer[buffer.length()-1]!='|') break;
-            templine += buffer;
+            //if(buffer[buffer.length()-1]!='|') break;
+
+            templine = templine + buffer;
         }
         contents += templine + '\n';
         lines.push_back(templine);

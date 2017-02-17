@@ -14,70 +14,55 @@ Type BPPTNode::determineType(std::string inputToken)
     std::regex vardeclaration("\\s?(.+):(.+)=(.+)");
     std::regex varinit("^(.+):(.+)$");
     std::regex arglist("^(.+),+(.+)$");
-    std::regex returnindentifier("return(.+)");
-    std::regex importnidentifier("^importnative(.+)$");
-    std::cout << inputToken << std::endl;
+    std::regex returnindentifier("^\\s?return(.+)$");
+    std::regex importnidentifier("^\\s?importnative(.+)$");
+    //std::regex functioncall("^\\scall(.+)\\(\\)") <- for version 0.2
     std::smatch matches;
     if(std::regex_match(inputToken,matches,functionatindentifier))
     {
-        std::cout << "F:AT" << std::endl
-        << matches[1] << matches[2] << matches[3] << std::endl;
         this->setTokenMatches(matches);
         return FUNCTIONAT;
     }
     if(std::regex_match(inputToken,matches,functiontindentifier))
     {
-        std::cout << "F:T" << std::endl
-        << matches[1] << matches[2] << std::endl;
         this->setTokenMatches(matches);
         return FUNCTIONT;
     }
 
     if(std::regex_match(inputToken,matches,functionaindentifier))
     {
-        std::cout << "F:A" << std::endl
-        << matches[1] << matches[2] << std::endl;
         this->setTokenMatches(matches);
         return FUNCTIONA;
     }
 
     if(std::regex_match(inputToken,matches,functionindentifier))
     {
-        std::cout << "F" << std::endl
-        << matches[1] << matches[2] << std::endl;
         this->setTokenMatches(matches);
         return FUNCTION;
     }
     if(std::regex_match(inputToken,matches,vardeclaration))
     {
-        std::cout << "VD" << std::endl
-        << matches[1] << matches[2] << matches[3] << std::endl;
         this->setTokenMatches(matches);
         return VARDEC;
     }
     if(std::regex_match(inputToken,matches,varinit))
     {
-        std::cout << "VA" << std::endl
-        << matches[1] << matches[2] << std::endl;
         this->setTokenMatches(matches);
         return VARINIT;
     }
     if(std::regex_match(inputToken,matches,arglist))
     {
-        std::cout << "ARG" << std::endl
-        << matches[1] << matches[2] << std::endl;
         this->setTokenMatches(matches);
         return ARGLIST;
     }
     if(std::regex_match(inputToken,matches,returnindentifier))
     {
-        std::cout << "RET" << std::endl;
+
         this->setTokenMatches(matches);
         return RETURN;
     }
     if(std::regex_match(inputToken,matches,importnidentifier))
     {
-        std::cout << "IMPN" << std::endl;
         this->setTokenMatches(matches);
         return IMPORTN;
     }
@@ -145,7 +130,6 @@ void BPPTNode::assembleSubNodes()
             BPPTNode* b = it->second;
             b->assembleSubNodes();
         }
-        std::cout<<"End"<<std::endl;
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
                 branches[branches_i]->assembleSubNodes();
@@ -157,7 +141,6 @@ void BPPTNode::assembleSubNodes()
             this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
             this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
             //this->parent->variables.push_back(BPPTVar(tokenmatches[1],tokenmatches[2])); //put in the scope
-            std::cout<<"Finished Building!"<<std::endl;
             break;
         }
     case VARDEC:
@@ -171,6 +154,7 @@ void BPPTNode::assembleSubNodes()
     case RETURN:
         {
             //save what value is being returned: you can use this later for compile-time features
+            this->data["value"] = new BPPTNode(tokenmatches[1],TEXT);
             break;
         }
     case IMPORTN:
@@ -183,13 +167,11 @@ void BPPTNode::assembleSubNodes()
 }
 BPPTNode::BPPTNode(std::string token) : token(token), tokenmatches()
 {
-    std::cout << "Creating...";
     type = this->determineType(this->token);
 }
 
 BPPTNode::~BPPTNode()
 {
-    std::cout << "Deleting." << std::endl;
     for(int branch_i = 0; branch_i < branches.size();branch_i++)
     {
         delete branches[branch_i];
@@ -233,6 +215,13 @@ BPPError BPPTNode::assemble()
         this->result = "#include <" + this->data["importvalue"]->getResult() + '>';
         break;
     }
+
+    case RETURN:
+        {
+           for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assemble(); }
+           this->result = "return " + this->data["value"]->getResult();
+           break;
+        }
 
     case TEXT:
     {
@@ -281,7 +270,7 @@ BPPError BPPTNode::assemble()
             {
                 BPPTNode* b = branches[i];
                  b->assemble();
-                 result += b->getResult() + ';';
+                 result += b->getResult() + ";\n";
             }
             result += "\n}";
             break;
@@ -340,14 +329,13 @@ BPPError BPPTNode::assemble()
             result = "";
             result += metaData["type"]->getToken() + ' ' + data["name"]->getToken() + "()";
             result += "{\n";
-            std::cout << "I have " << branches.size() << "branches" << std::endl;
             for(int i = 0; i < branches.size(); i ++)
                 {
                  BPPTNode* b = branches[i];
                  b->assemble();
                  result += b->getResult() + ";\n";
             }
-            result += "}";
+            result += "\n}";
             break;
     }
 

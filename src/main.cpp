@@ -51,6 +51,6 @@ int main()
         std::cout << "==========Error occured while compiling:=============\n" << errorOnCompiling.getMessage() <<'\n';
         return 0;
     }
-    std::cout << "Compilation sucessful and ir code written to " + fileToWrite + '\n';
+    std::cout << "Compilation sucessful!" + fileToWrite + '\n';
     return 0;
 }
