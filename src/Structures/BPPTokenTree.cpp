@@ -8,7 +8,9 @@ BPPTokenTree::BPPTokenTree()
 
 void BPPTokenTree::setup()
 {
-    root->assembleSubNodes();
+    root->assembleSubNodes(*this);
+    std::cout<<"Variables:"<<variables.size()<<std::endl;
+    for(std::map<std::string,BPPTVar*>::iterator it=variables.begin(); it!=variables.end(); ++it) std::cout<<it->second->getName()<<std::endl<<it->second->getType()<<std::endl;
 }
 
 void BPPTokenTree::addNodeTo(BPPTNode* attachTo,std::string data)
@@ -27,10 +29,15 @@ BPPTNode* searchBranches(BPPTNode* root,Type t)
 {
     if(root->branches.size() > 0) for(auto b : root->branches)
     {
-        if(b->getType()==t) return b;
+        if(b->getType()==t){return b;}
         if(searchBranches(b,t)!=nullptr) return searchBranches(b,t);
     }
     return nullptr;
+}
+
+void BPPTokenTree::varAdd(std::string name, std::string type)
+{
+    variables[name] = new BPPTVar(name,type);
 }
 
 void determineTypeOfValue(std::string value)
@@ -40,15 +47,13 @@ void determineTypeOfValue(std::string value)
 void BPPTokenTree::metaSetup()
 {
     BPPTNode* astIterator = root;
+    std::cout<<root->branches.size()<<std::endl;
     for(auto b : astIterator->branches)
     {
-        /*
         if(b->getType() == FUNCTION || b->getType() == FUNCTIONA)
         { //Later, I need to add parsing features to find the type of this function
-            std::cout<<"Let's begin"<<std::endl;
-            //BPPTNode* returnKeyword = searchBranches(b,RETURN);
-
+            BPPTNode* returnKeyword = searchBranches(b,RETURN);
         }
-        */
+
     }
 }

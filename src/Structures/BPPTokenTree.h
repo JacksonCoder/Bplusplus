@@ -1,7 +1,9 @@
 #ifndef BPPTOKENTREE_H
 #define BPPTOKENTREE_H
-#include "Structures/BPPTNode.h"
+
 #include "Structures/BPPError.h"
+#include "BPPTNode.h"
+#include "BPPTVar.h"
 class BPPTokenTree
 {
     public:
@@ -15,12 +17,13 @@ class BPPTokenTree
         BPPError& getError(){ return error;}
         void addNodeTo(BPPTNode*,std::string);
         void metaSetup();
+        void varAdd(std::string,std::string);
     protected:
     private:
-        /*
-        std::vector<std::string,BPPTVar*> variables; <- for version 0.2
-        std::vector<std::String,BPPTVar*> functions; <- for version 0.2
-        */
+
+        std::map<std::string,BPPTVar*> variables; //<- for version 0.2
+        std::map<std::string,BPPTVar*> functions; //<- for version 0.2
+
          BPPTNode* root; //!< Member variable "root"
          BPPError error;
 };

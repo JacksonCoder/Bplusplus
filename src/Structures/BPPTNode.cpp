@@ -5,6 +5,13 @@ void BPPTNode::setTokenMatches(std::smatch match)
 {
     this->tokenmatches = match;
 }
+
+bool varAssociatedWithName(std::string name)
+{
+    //we need to search for a name using a TokenTree, find a way to get a reference, pronto!
+    return false;
+}
+
 Type BPPTNode::determineType(std::string inputToken)
 {
     std::regex functionindentifier("\\s?(.+)\\(\\)");
@@ -66,6 +73,10 @@ Type BPPTNode::determineType(std::string inputToken)
         this->setTokenMatches(matches);
         return IMPORTN;
     }
+    if(varAssociatedWithName(inputToken))
+    {
+        return VARINDENTIFIER;
+    }
     return TEXT;
 }
 
@@ -73,7 +84,7 @@ BPPTNode::BPPTNode(Type t) : tokenmatches()
 {
     type = t;
 }
-void BPPTNode::assembleSubNodes()
+void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
 {
     this->determineType(this->token); // I don't know why this works, but I apparently need to run this to refresh tokenmatches
     switch(type)
@@ -82,7 +93,7 @@ void BPPTNode::assembleSubNodes()
         {
              for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
-                branches[branches_i]->assembleSubNodes();
+                branches[branches_i]->assembleSubNodes(tree);
             }
             break;
         }
@@ -90,10 +101,10 @@ void BPPTNode::assembleSubNodes()
         {
         this->metaData["type"] = new BPPTNode("void");
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
-        for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(); }
+        for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
-                branches[branches_i]->assembleSubNodes();
+                branches[branches_i]->assembleSubNodes(tree);
             }
         break;
         }
@@ -102,10 +113,10 @@ void BPPTNode::assembleSubNodes()
         this->metaData["type"] = new BPPTNode("void");
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
         this->data["arglist"] = new BPPTNode(tokenmatches[2],VARINIT);
-        for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(); }
+        for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
-                branches[branches_i]->assembleSubNodes();
+                branches[branches_i]->assembleSubNodes(tree);
             }
         break;
         }
@@ -113,10 +124,10 @@ void BPPTNode::assembleSubNodes()
         {
         this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
-        for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(); }
+        for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
-                branches[branches_i]->assembleSubNodes();
+                branches[branches_i]->assembleSubNodes(tree);
             }
         break;
         }
@@ -128,11 +139,11 @@ void BPPTNode::assembleSubNodes()
         for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it)
         {
             BPPTNode* b = it->second;
-            b->assembleSubNodes();
+            b->assembleSubNodes(tree);
         }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
-                branches[branches_i]->assembleSubNodes();
+                branches[branches_i]->assembleSubNodes(tree);
             }
         break;
         }
@@ -140,6 +151,7 @@ void BPPTNode::assembleSubNodes()
         {
             this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
             this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
+            tree.varAdd(tokenmatches[1],tokenmatches[2]);
             //this->parent->variables.push_back(BPPTVar(tokenmatches[1],tokenmatches[2])); //put in the scope
             break;
         }
@@ -148,13 +160,14 @@ void BPPTNode::assembleSubNodes()
         this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
         this->data["value"] = new BPPTNode(tokenmatches[3],TEXT);
+        tree.varAdd(tokenmatches[1],tokenmatches[2]);
         //this->parent->variables.push_back(BPPTVar(tokenmatches[1],tokenmatches[2])); //put in the scope
         break;
         }
     case RETURN:
         {
             //save what value is being returned: you can use this later for compile-time features
-            this->data["value"] = new BPPTNode(tokenmatches[1],TEXT);
+            this->data["value"] = new BPPTNode(tokenmatches[1],TEXT);//VARINDENTIFIER);
             break;
         }
     case IMPORTN:

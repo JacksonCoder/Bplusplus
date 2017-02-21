@@ -1,10 +1,11 @@
 #ifndef BPPTNODE_H
 #define BPPTNODE_H
 #include <regex>
-#include "BPPTVar.h"
 #include "Structures/tokenType.h"
 #include "Structures/BPPError.h"
 #include "Structures/BPPFile.h"
+#include "BPPTVar.h"
+class BPPTokenTree;
 class BPPTNode
 {
     public:
@@ -16,7 +17,7 @@ class BPPTNode
         BPPTNode(std::string s,Type t): token(s),type(t) {}
         Type getType(){ return type;}
         BPPError assemble();
-        void assembleSubNodes();
+        void assembleSubNodes(BPPTokenTree&);
         Type determineType(std::string);
         std::string getToken(){ return token;}
         std::string getResult(){ return result;}
@@ -36,5 +37,5 @@ class BPPTNode
         std::string token;
         std::string result;
 };
-
+#include "BPPTokenTree.h"
 #endif // BPPTNODE_H

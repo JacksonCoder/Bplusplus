@@ -5,14 +5,14 @@
 #include "Structures/BPPTNode.h"
 #include "Structures/BPPTokenTree.h"
 #include "Compiler/parsing.h"
-std::string startupMessage = "Welcome to B++ v0.1.\nPlease enter the name of a file to open:\n";
+std::string startupMessage = "Welcome to B++ v0.2.\nPlease enter the name of a file to open:\n";
 
 BPPError startProcess(BPPFile *readfile,BPPFile *writefile)
 {
 preParseContents(readfile);
 BPPTokenTree bt = assembleTree(readfile);
 if(bt.isError()) return bt.getError();
-//bt.metaSetup();
+bt.metaSetup();
 bt.setup();
 BPPError someError = bt.getRoot()->assemble();
 if(someError.errorExists()) return bt.getError();
@@ -33,7 +33,6 @@ int main()
         std::cout << "The file you selected could not be open.\nExiting...";
         return 0;
     }
-    std::cout<<sourceFile.lines.size();
     std::string fileToWrite;
     std::cout << "Enter the output filename:\n";
     std::cin >> fileToWrite;
