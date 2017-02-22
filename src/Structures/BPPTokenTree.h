@@ -18,6 +18,8 @@ class BPPTokenTree
         void addNodeTo(BPPTNode*,std::string);
         void metaSetup();
         void varAdd(std::string,std::string);
+        std::string type(std::string);
+        bool varSearch(std::string);
     protected:
     private:
 

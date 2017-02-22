@@ -6,6 +6,17 @@ BPPTokenTree::BPPTokenTree()
     root = new BPPTNode(ROOT);
 }
 
+std::string BPPTokenTree::type(std::string searcher)
+{
+    return variables[searcher]->getType();
+}
+
+
+bool BPPTokenTree::varSearch(std::string searcher)
+{
+    if(variables.count(searcher)) return variables[searcher];
+}
+
 void BPPTokenTree::setup()
 {
     root->assembleSubNodes(*this);
@@ -30,7 +41,7 @@ BPPTNode* searchBranches(BPPTNode* root,Type t)
     if(root->branches.size() > 0) for(auto b : root->branches)
     {
         if(b->getType()==t){return b;}
-        if(searchBranches(b,t)!=nullptr) return searchBranches(b,t);
+        if(searchBranches(b,t)!=nullptr){return searchBranches(b,t);}
     }
     return nullptr;
 }
@@ -40,19 +51,16 @@ void BPPTokenTree::varAdd(std::string name, std::string type)
     variables[name] = new BPPTVar(name,type);
 }
 
-void determineTypeOfValue(std::string value)
-{
-    //work on later
-}
 void BPPTokenTree::metaSetup()
 {
     BPPTNode* astIterator = root;
-    std::cout<<root->branches.size()<<std::endl;
     for(auto b : astIterator->branches)
     {
         if(b->getType() == FUNCTION || b->getType() == FUNCTIONA)
         { //Later, I need to add parsing features to find the type of this function
             BPPTNode* returnKeyword = searchBranches(b,RETURN);
+            std::string type = returnKeyword->data["returntype"]->getToken();
+            b->metaData["type"]->setToken(type);
         }
 
     }

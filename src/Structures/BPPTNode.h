@@ -21,10 +21,12 @@ class BPPTNode
         Type determineType(std::string);
         std::string getToken(){ return token;}
         std::string getResult(){ return result;}
-        std::vector<BPPTNode*> branches; //!< Member variable "branches"
+        void setToken(std::string t){token=t;}
+        std::vector<BPPTNode*> branches;
         BPPTNode* parent;
         void setTokenMatches(std::smatch);
-        std::vector<BPPTVar> variables;
+        std::map<std::string,BPPTNode*> data;
+        std::map<std::string,BPPTNode*> metaData;
     protected:
     private:
 
@@ -32,8 +34,7 @@ class BPPTNode
 
         Type type;
         std::smatch tokenmatches;
-        std::map<std::string,BPPTNode*> data; //!< Member variable "data"
-        std::map<std::string,BPPTNode*> metaData; //!< Member variable "metaData"
+
         std::string token;
         std::string result;
 };

@@ -1,6 +1,7 @@
 import native iostream
-main(charnum:int)
-	h:t =|
-	5
-	return |
-4
+import native fstream
+main(char:int)
+	ret:int = 0
+	return ret
+w()
+	return ret

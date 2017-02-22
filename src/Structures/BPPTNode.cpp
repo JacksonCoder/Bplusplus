@@ -6,12 +6,6 @@ void BPPTNode::setTokenMatches(std::smatch match)
     this->tokenmatches = match;
 }
 
-bool varAssociatedWithName(std::string name)
-{
-    //we need to search for a name using a TokenTree, find a way to get a reference, pronto!
-    return false;
-}
-
 Type BPPTNode::determineType(std::string inputToken)
 {
     std::regex functionindentifier("\\s?(.+)\\(\\)");
@@ -72,10 +66,6 @@ Type BPPTNode::determineType(std::string inputToken)
     {
         this->setTokenMatches(matches);
         return IMPORTN;
-    }
-    if(varAssociatedWithName(inputToken))
-    {
-        return VARINDENTIFIER;
     }
     return TEXT;
 }
@@ -167,7 +157,13 @@ void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
     case RETURN:
         {
             //save what value is being returned: you can use this later for compile-time features
-            this->data["value"] = new BPPTNode(tokenmatches[1],TEXT);//VARINDENTIFIER);
+            this->data["value"] = new BPPTNode(tokenmatches[1],TEXT);
+            if(tree.varSearch(this->data["value"]->getToken()))
+            {
+            this->data["returntype"] = new BPPTNode(tree.type(this->data["value"]->getToken()),TEXT);
+            std::cout<<"returntype:"<<this->data["returntype"]->getToken()<<std::endl;
+
+            }
             break;
         }
     case IMPORTN:

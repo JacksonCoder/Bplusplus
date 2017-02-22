@@ -12,8 +12,9 @@ BPPError startProcess(BPPFile *readfile,BPPFile *writefile)
 preParseContents(readfile);
 BPPTokenTree bt = assembleTree(readfile);
 if(bt.isError()) return bt.getError();
-bt.metaSetup();
+
 bt.setup();
+bt.metaSetup();
 BPPError someError = bt.getRoot()->assemble();
 if(someError.errorExists()) return bt.getError();
 std::cout << bt.getRoot()->getResult() << std::endl;
@@ -37,7 +38,7 @@ int main()
     std::cout << "Enter the output filename:\n";
     std::cin >> fileToWrite;
     BPPFile compileFile;
-    compileFile.read(fileToWrite);
+    //compileFile.read(fileToWrite);
     if(compileFile.errorOccured())
     {
         std::cout << "The file you selected could not be written to.\nExiting...";
