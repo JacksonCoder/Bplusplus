@@ -1,9 +1,10 @@
 #ifndef BPPTOKENTREE_H
 #define BPPTOKENTREE_H
-
-#include "Structures/BPPError.h"
 #include "BPPTNode.h"
+#include "Structures/tokenType.h"
+#include "Structures/BPPError.h"
 #include "BPPTVar.h"
+class BPPTNode;
 class BPPTokenTree
 {
     public:
@@ -17,9 +18,9 @@ class BPPTokenTree
         BPPError& getError(){ return error;}
         void addNodeTo(BPPTNode*,std::string);
         void metaSetup();
-        void varAdd(std::string,std::string);
-        std::string type(std::string);
-        bool varSearch(std::string);
+        void varAdd(std::string,std::string,BPPTNode*);
+        std::string type(std::string,BPPTNode*);
+        bool varSearch(std::string,BPPTNode*);
     protected:
     private:
 

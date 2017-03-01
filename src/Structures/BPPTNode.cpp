@@ -1,24 +1,32 @@
-#include <regex>
-#include "Structures/BPPTNode.h"
+
+#include "BPPTNode.h"
 
 void BPPTNode::setTokenMatches(std::smatch match)
 {
-    this->tokenmatches = match;
+    this->tokenmatches.assign(match.begin(),match.end());
 }
+bool BPPTNode::isArglist(std::string s)
+{
+    std::regex arglist("([^\\(\\)]+),([^\\(\\)]+)");
+    if(std::regex_search(s,arglist)){
+        return true;
 
+    }
+    return false;
+}
 Type BPPTNode::determineType(std::string inputToken)
 {
-    std::regex functionindentifier("\\s?(.+)\\(\\)");
-    std::regex functionaindentifier("\\s?(.+)\\((.+)\\)");
-    std::regex functiontindentifier("\\s?(.+)\\(\\):(.+)");
-    std::regex functionatindentifier("\\s?(.+)\\((.+)\\):(.+)");
-    std::regex vardeclaration("\\s?(.+):(.+)=(.+)");
-    std::regex varinit("^(.+):(.+)$");
-    std::regex arglist("^(.+),+(.+)$");
+    std::regex functionindentifier("\\s?(\\w+)\\(\\)");
+    std::regex functionaindentifier("\\s?(\\w+)\\((.+)\\)");
+    std::regex functiontindentifier("\\s?(\\w+)\\(\\):(.+)");
+    std::regex functionatindentifier("\\s?(\w+)\\((.+)\\):(\\w+)");
+    std::regex vardeclaration("\\s?(\\w+):(\\w+)=(.+)");
+    std::regex varinit("^(\\w+):(\\w+)$");
     std::regex returnindentifier("^\\s?return(.+)$");
     std::regex importnidentifier("^\\s?importnative(.+)$");
     //std::regex functioncall("^\\scall(.+)\\(\\)") <- for version 0.2
     std::smatch matches;
+
     if(std::regex_match(inputToken,matches,functionatindentifier))
     {
         this->setTokenMatches(matches);
@@ -41,6 +49,10 @@ Type BPPTNode::determineType(std::string inputToken)
         this->setTokenMatches(matches);
         return FUNCTION;
     }
+    if(isArglist(inputToken))
+    {
+        return ARGLIST;
+    }
     if(std::regex_match(inputToken,matches,vardeclaration))
     {
         this->setTokenMatches(matches);
@@ -50,11 +62,6 @@ Type BPPTNode::determineType(std::string inputToken)
     {
         this->setTokenMatches(matches);
         return VARINIT;
-    }
-    if(std::regex_match(inputToken,matches,arglist))
-    {
-        this->setTokenMatches(matches);
-        return ARGLIST;
     }
     if(std::regex_match(inputToken,matches,returnindentifier))
     {
@@ -67,6 +74,7 @@ Type BPPTNode::determineType(std::string inputToken)
         this->setTokenMatches(matches);
         return IMPORTN;
     }
+
     return TEXT;
 }
 
@@ -74,23 +82,49 @@ BPPTNode::BPPTNode(Type t) : tokenmatches()
 {
     type = t;
 }
+
 void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
 {
     this->determineType(this->token); // I don't know why this works, but I apparently need to run this to refresh tokenmatches
     switch(type)
     {
+    case ARGLIST:
+        {
+            std::cout<<"ARG"<<std::endl;
+            std::string s = token;
+            size_t pos = 0;
+            std::string token;
+            while ((pos = s.find(",")) != std::string::npos)
+            {
+                token = s.substr(0, pos);
+                tokenmatches.push_back(token);
+                s.erase(0, pos + 1);
+            }
+        token = s.substr(0, pos);std::cout<<token<<std::endl;
+        tokenmatches.push_back(token);
+            for(auto t : tokenmatches)
+            {
+                branches.push_back(new BPPTNode(t,this));
+            }
+            for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
+            {
+                branches[branches_i]->assembleSubNodes(tree);
+            }
+            break;
+        }
         case ROOT:
         {
              for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
                 branches[branches_i]->assembleSubNodes(tree);
             }
+
             break;
         }
     case FUNCTION:
         {
-        this->metaData["type"] = new BPPTNode("void");
-        this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
+        this->metaData["type"] = new BPPTNode("void",this);
+        this->data["name"] = new BPPTNode(tokenmatches[1],TEXT); //ADDTO
         for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
@@ -100,9 +134,9 @@ void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
         }
     case FUNCTIONA:
         {
-        this->metaData["type"] = new BPPTNode("void");
-        this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
-        this->data["arglist"] = new BPPTNode(tokenmatches[2],VARINIT);
+        this->metaData["type"] = new BPPTNode("void",this);
+        this->data["name"] = new BPPTNode(tokenmatches[1],TEXT); //2 ADDTO
+        this->data["arglist"] = new BPPTNode(tokenmatches[2],ARGLIST);
         for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
             {
@@ -112,7 +146,7 @@ void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
         }
     case FUNCTIONT:
         {
-        this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
+        this->data["type"] = new BPPTNode(tokenmatches[2],TEXT); //2 ADDTO
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
         for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
@@ -123,9 +157,9 @@ void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
         }
     case FUNCTIONAT:
         {
-        this->data["type"] = new BPPTNode(tokenmatches[3],TEXT);
+        this->data["type"] = new BPPTNode(tokenmatches[3],TEXT); //3 ADDTO
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
-        this->data["arglist"] = new BPPTNode(tokenmatches[2]);
+        this->data["arglist"] = new BPPTNode(tokenmatches[2],ARGLIST);
         for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it)
         {
             BPPTNode* b = it->second;
@@ -139,18 +173,18 @@ void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
         }
     case VARINIT:
         {
-            this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
+            this->data["type"] = new BPPTNode(tokenmatches[2],TEXT); //2 ADDTO
             this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
-            tree.varAdd(tokenmatches[1],tokenmatches[2]);
+            tree.varAdd(tokenmatches[1],tokenmatches[2],parent);
             //this->parent->variables.push_back(BPPTVar(tokenmatches[1],tokenmatches[2])); //put in the scope
             break;
         }
     case VARDEC:
         {
-        this->data["type"] = new BPPTNode(tokenmatches[2],TEXT);
+        this->data["type"] = new BPPTNode(tokenmatches[2],TEXT); //3 ADDTO
         this->data["name"] = new BPPTNode(tokenmatches[1],TEXT);
         this->data["value"] = new BPPTNode(tokenmatches[3],TEXT);
-        tree.varAdd(tokenmatches[1],tokenmatches[2]);
+        tree.varAdd(tokenmatches[1],tokenmatches[2],parent);
         //this->parent->variables.push_back(BPPTVar(tokenmatches[1],tokenmatches[2])); //put in the scope
         break;
         }
@@ -158,22 +192,28 @@ void BPPTNode::assembleSubNodes(BPPTokenTree& tree)
         {
             //save what value is being returned: you can use this later for compile-time features
             this->data["value"] = new BPPTNode(tokenmatches[1],TEXT);
-            if(tree.varSearch(this->data["value"]->getToken()))
+            if(tree.varSearch(this->data["value"]->getToken(),parent))
             {
-            this->data["returntype"] = new BPPTNode(tree.type(this->data["value"]->getToken()),TEXT);
-            std::cout<<"returntype:"<<this->data["returntype"]->getToken()<<std::endl;
-
+            this->data["returntype"] = new BPPTNode(tree.type(this->data["value"]->getToken(),parent),TEXT); //ADDTO
+            }
+            else{
+                fail("Error... the variable specified to be returned was not previously declared!"); //how can we get it to match a specific line?
             }
             break;
         }
     case IMPORTN:
         {
-            this->data["importvalue"] = new BPPTNode(tokenmatches[1]);
+            this->data["importvalue"] = new BPPTNode(tokenmatches[1],this);
             break;
         }
     }
 
 }
+BPPTNode::BPPTNode(std::string token,BPPTNode* parent) : token(token), tokenmatches(), parent(parent)
+{
+    type = this->determineType(this->token);
+}
+
 BPPTNode::BPPTNode(std::string token) : token(token), tokenmatches()
 {
     type = this->determineType(this->token);
@@ -211,6 +251,17 @@ BPPError BPPTNode::assemble()
     BPPError assembleError;
     switch(type) {
 
+case ARGLIST:
+    {
+        for(auto b : branches)
+        {
+            b->assemble();
+            this->result += b->getResult() + ',';
+        }
+        result.erase(result.end()-1, result.end());
+        break;
+    }
+
     case VARINIT:
     {
         for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assemble(); }
@@ -237,6 +288,7 @@ BPPError BPPTNode::assemble()
         this->result = this->token;
         break;
     }
+
     case ROOT:
         {
             for(auto b : branches)
@@ -249,11 +301,13 @@ BPPError BPPTNode::assemble()
             }
             break;
         }
+
     case BLANKLINE:
         {
             this->result = "";
             break;
         }
+
     case VARDEC:
         {
             for(std::map<std::string,BPPTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ BPPTNode* b = it->second; b->assemble(); }
@@ -284,6 +338,7 @@ BPPError BPPTNode::assemble()
             result += "\n}";
             break;
             }
+
         case FUNCTIONT:
             {
 
@@ -305,6 +360,7 @@ BPPError BPPTNode::assemble()
             result += "\n}";
             break;
             }
+
         case FUNCTIONA:
             {
             if(data.find("name") == data.end() || metaData.find("type") == metaData.end() || data.find("arglist") == data.end())

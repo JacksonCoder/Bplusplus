@@ -1,6 +1,7 @@
 #ifndef PARSING_H_INCLUDED
 #define PARSING_H_INCLUDED
-#include "Structures/BPPError.h"
+#include "Structures/BPPFile.h"
+#include "Structures/BPPTokenTree.h"
 
 enum IndentationType
 {
@@ -22,7 +23,7 @@ IndentationType getIndentationType(BPPFile* bfile)
     }
     return SPACES; //default
 }
-BPPError stripWhitespace(BPPFile* file,IndentationType IT)
+void stripWhitespace(BPPFile* file,IndentationType IT)
 {
 
     switch(IT)
@@ -59,8 +60,6 @@ BPPError stripWhitespace(BPPFile* file,IndentationType IT)
             break;
         }
     }
-    BPPError noerror;
-    return noerror;
 }
 BPPTokenTree assembleTree(BPPFile* bfile)
 {
@@ -82,15 +81,11 @@ BPPTokenTree assembleTree(BPPFile* bfile)
             if(i>0){ attacher = attacher->branches[attacher->branches.size()-1]; }
             else
             {
-                returnValue.getError().setError(true);
-                returnValue.getError().setMessage("On line " + std::to_string(i) + ": Error: unexpected indentation!");
-                return returnValue;
+                fail("Error: unexpected lack of indentation!");
             }
             if(numberofindents > scopelevel)
                 {
-                returnValue.getError().setError(true);
-                returnValue.getError().setMessage("Error: unexpected indentation!");
-                return returnValue;
+                fail("Error: unexpected lack of indentation!");
             }
         }
         if(numberofindents < scopelevel){
@@ -100,32 +95,28 @@ BPPTokenTree assembleTree(BPPFile* bfile)
             if(i>0){ attacher = attacher->parent; }
             else
             {
-                returnValue.getError().setError(true);
-                returnValue.getError().setMessage("Error: unexpected lack of indentation!");
-                return returnValue;
+                fail("Error: unexpected lack of indentation!");
             }
             if(numberofindents > scopelevel)
                 {
-                returnValue.getError().setError(true);
-                returnValue.getError().setMessage("Error: unexpected lack of indentation!");
-                return returnValue;
+                fail("Error: unexpected lack of indentation!");
             }
         }
         returnValue.addNodeTo(attacher,bfile->lines[i]);
     }
-
+    returnValue.setup();
+    returnValue.metaSetup();
     return returnValue;
 }
 
-BPPError preParseContents(BPPFile* bfile)
+void preParseContents(BPPFile* bfile)
 {
 
     IndentationType indentType = getIndentationType(bfile);
     if(indentType ==3 ){
-        return BPPError("Could not successfully identify primary indentation type");
+        fail("Could not successfully identify primary indentation type");
     }
-    BPPError ste = stripWhitespace(bfile,indentType);
-    return ste;
+    stripWhitespace(bfile,indentType);
 }
 
 #endif // PARSING_H_INCLUDED

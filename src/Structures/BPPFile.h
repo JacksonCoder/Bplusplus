@@ -1,7 +1,9 @@
 #ifndef BPPFILE_H
 #define BPPFILE_H
 #include "Libraries/shared.h"
-#include "Structures/BPPError.h"
+#ifndef INCLUDEFAIL
+#include "Compiler/fail.h"
+#endif
 class BPPFile
 {
     public:
@@ -10,8 +12,6 @@ class BPPFile
         /** Default destructor */
         ~BPPFile();
         std::string getContents() { return contents; }
-
-        bool errorOccured() {return error.errorExists();}
         void read(std::string);
         std::vector<std::string> getLines(){ return lines;}
                 std::vector<std::string> lines;
@@ -20,7 +20,6 @@ class BPPFile
         std::fstream stream; //!< Member variable "stream"
 
         std::string contents;
-        BPPError error;
 };
 
 #endif // BPPFILE_H

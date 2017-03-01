@@ -1,20 +1,21 @@
 #include "BPPTokenTree.h"
-#include "Libraries/shared.h"
-#include "Structures/tokenType.h"
+
 BPPTokenTree::BPPTokenTree()
 {
     root = new BPPTNode(ROOT);
 }
 
-std::string BPPTokenTree::type(std::string searcher)
+std::string BPPTokenTree::type(std::string searcher,BPPTNode* scope)
 {
-    return variables[searcher]->getType();
+    if(scope->variables.count(searcher))
+    return scope->variables[searcher]->getType();
 }
 
 
-bool BPPTokenTree::varSearch(std::string searcher)
+bool BPPTokenTree::varSearch(std::string searcher, BPPTNode* scope)
 {
-    if(variables.count(searcher)) return variables[searcher];
+    if(scope->variables.count(searcher)) return true;
+    return false;
 }
 
 void BPPTokenTree::setup()
@@ -22,6 +23,7 @@ void BPPTokenTree::setup()
     root->assembleSubNodes(*this);
     std::cout<<"Variables:"<<variables.size()<<std::endl;
     for(std::map<std::string,BPPTVar*>::iterator it=variables.begin(); it!=variables.end(); ++it) std::cout<<it->second->getName()<<std::endl<<it->second->getType()<<std::endl;
+    std::cout<<"s";
 }
 
 void BPPTokenTree::addNodeTo(BPPTNode* attachTo,std::string data)
@@ -46,9 +48,9 @@ BPPTNode* searchBranches(BPPTNode* root,Type t)
     return nullptr;
 }
 
-void BPPTokenTree::varAdd(std::string name, std::string type)
+void BPPTokenTree::varAdd(std::string name, std::string type,BPPTNode* attacher)
 {
-    variables[name] = new BPPTVar(name,type);
+    attacher->variables[name] = new BPPTVar(name,type);
 }
 
 void BPPTokenTree::metaSetup()
