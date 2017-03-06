@@ -1,5 +1,3 @@
 import native iostream
-import native fstream
-main(j:k,l:y,v:y)
- ret:int = 0
- return ret
+recursive(r:int)
+	return r + recursive(r+1)

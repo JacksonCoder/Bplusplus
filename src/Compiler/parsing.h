@@ -25,7 +25,7 @@ IndentationType getIndentationType(BPPFile* bfile)
 }
 void stripWhitespace(BPPFile* file,IndentationType IT)
 {
-
+    /*
     switch(IT)
     {
     case SPACES:
@@ -34,13 +34,13 @@ void stripWhitespace(BPPFile* file,IndentationType IT)
             for(int lines_i = 0; lines_i < file->lines.size();lines_i++)
             {
                 std::string &l = file->lines[lines_i];
-                l.erase(std::remove(l.begin(),l.end(),'\t'),l.end());
+
                 std::string::iterator startingpoint = l.begin();
                 while(*startingpoint == ' ')
                 {
                     startingpoint++;
                 }
-                l.erase(std::remove(startingpoint,l.end(),' '),l.end());
+                l.erase(std::remove(l.begin(),startingpoint,'\t'),l.end());
             }
             break;
         }
@@ -55,11 +55,11 @@ void stripWhitespace(BPPFile* file,IndentationType IT)
                 {
                     startingpoint++;
                 }
-                l.erase(std::remove(startingpoint,l.end(),'\t'),l.end());
             }
             break;
         }
     }
+    */
 }
 BPPTokenTree assembleTree(BPPFile* bfile)
 {
@@ -71,9 +71,20 @@ BPPTokenTree assembleTree(BPPFile* bfile)
     int scopelevel = 0;
 
     for(int i = 0; i < bfile->lines.size();i++){
-        int numberofindents;
-        if(getIndentationType(bfile) == TABS) numberofindents = std::count(bfile->lines[i].begin(),bfile->lines[i].end(),'\t');
-        else numberofindents = std::count(bfile->lines[i].begin(),bfile->lines[i].end(),' ');
+        int numberofindents = 0;
+        std::string::iterator startingpoint = bfile->lines[i].begin();
+
+                if(getIndentationType(bfile) == TABS) while(*startingpoint == '\t')
+                {
+                    startingpoint++;
+                }
+                else while(*startingpoint == ' ')
+                {
+                    startingpoint++;
+                }
+        if(getIndentationType(bfile) == TABS) numberofindents = std::count(bfile->lines[i].begin(),startingpoint,'\t');
+        else numberofindents = std::count(bfile->lines[i].begin(),startingpoint,' ');
+                std::cout<<numberofindents<<std::endl;
         if(numberofindents > scopelevel){
 
             scopelevel++;

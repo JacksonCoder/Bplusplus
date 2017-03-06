@@ -28,6 +28,15 @@ class BPPTNode
         BPPTNode* parent;
         void setTokenMatches(std::smatch);
         bool isArglist(std::string);
+        bool isFunction(std::string);
+        bool isFunctionA(std::string);
+        bool isFunctionT(std::string);
+        bool isFunctionAT(std::string);
+        bool isVarInit(std::string);
+        bool isVarDecl(std::string);
+        bool isImportStatement(std::string);
+        bool isReturnStatement(std::string);
+        bool isVarInitWithArguments(std::string);
         std::map<std::string,BPPTNode*> data;
         std::map<std::string,BPPTNode*> metaData;
         std::map<std::string,BPPTVar*> variables;

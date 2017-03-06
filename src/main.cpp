@@ -22,7 +22,6 @@ std::cout << bt.getRoot()->getResult() << std::endl;
 
 int main()
 {
-
     std::cout << startupMessage;
     std::string fileToOpen;
     std::cin >> fileToOpen;
