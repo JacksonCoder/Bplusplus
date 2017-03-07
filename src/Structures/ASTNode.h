@@ -1,31 +1,31 @@
-#ifndef BPPTNODE_H
-#define BPPTNODE_H
+#ifndef ASTNode_H
+#define ASTNode_H
 #include <regex>
 #include "Structures/tokenType.h"
-#include "Structures/BPPError.h"
-#include "Structures/BPPFile.h"
-#include "BPPTVar.h"
-#include "BPPTokenTree.h"
-class BPPTokenTree;
-class BPPTNode
+#include "Structures/Error.h"
+#include "Structures/File.h"
+#include "TVar.h"
+#include "ASTTree.h"
+class ASTTree;
+class ASTNode
 {
     public:
-        BPPTNode* getPreviousSibling();
-        BPPTNode* getNextSibling();
-        BPPTNode(Type t);
-        ~BPPTNode();
-        BPPTNode(std::string);
-        BPPTNode(std::string,BPPTNode*);
-        BPPTNode(std::string s,Type t): token(s),type(t) {}
+        ASTNode* getPreviousSibling();
+        ASTNode* getNextSibling();
+        ASTNode(Type t);
+        ~ASTNode();
+        ASTNode(std::string);
+        ASTNode(std::string,ASTNode*);
+        ASTNode(std::string s,Type t): token(s),type(t) {}
         Type getType(){ return type;}
-        BPPError assemble();
-        void assembleSubNodes(BPPTokenTree&);
+        Error assemble();
+        void assembleSubNodes(ASTTree&);
         Type determineType(std::string);
         std::string getToken(){ return token;}
         std::string getResult(){ return result;}
         void setToken(std::string t){token=t;}
-        std::vector<BPPTNode*> branches;
-        BPPTNode* parent;
+        std::vector<ASTNode*> branches;
+        ASTNode* parent;
         void setTokenMatches(std::smatch);
         bool isArglist(std::string);
         bool isFunction(std::string);
@@ -37,9 +37,9 @@ class BPPTNode
         bool isImportStatement(std::string);
         bool isReturnStatement(std::string);
         bool isVarInitWithArguments(std::string);
-        std::map<std::string,BPPTNode*> data;
-        std::map<std::string,BPPTNode*> metaData;
-        std::map<std::string,BPPTVar*> variables;
+        std::map<std::string,ASTNode*> data;
+        std::map<std::string,ASTNode*> metaData;
+        std::map<std::string,TVar*> variables;
     protected:
     private:
 
@@ -50,5 +50,5 @@ class BPPTNode
         std::string token;
         std::string result;
 };
-//#include "BPPTokenTree.h"
-#endif // BPPTNODE_H
+//#include "ASTTree.h"
+#endif // ASTNode_H

@@ -1,3 +1,5 @@
 import native iostream
-recursive(r:int)
-	return r + recursive(r+1)
+import native fstream
+
+main(const awesome:int):int
+	thing:cool = 3

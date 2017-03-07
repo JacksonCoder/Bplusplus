@@ -1,16 +1,16 @@
-#ifndef BPPFILE_H
-#define BPPFILE_H
+#ifndef FILE_H
+#define FILE_H
 #include "Libraries/shared.h"
 #ifndef INCLUDEFAIL
 #include "Compiler/fail.h"
 #endif
-class BPPFile
+class File
 {
     public:
         /** Default constructor */
-        BPPFile(){}
+        File(){}
         /** Default destructor */
-        ~BPPFile();
+        ~File();
         std::string getContents() { return contents; }
         void read(std::string);
         std::vector<std::string> getLines(){ return lines;}
@@ -22,4 +22,4 @@ class BPPFile
         std::string contents;
 };
 
-#endif // BPPFILE_H
+#endif // FILE_H

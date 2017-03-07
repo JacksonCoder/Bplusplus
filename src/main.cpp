@@ -1,17 +1,17 @@
 #include "Libraries/shared.h"
 #include "Compiler/parsing.h"
 #include "Structures/tokenType.h"
-#include "Structures/BPPError.h"
-#include "Structures/BPPFile.h"
-#include "Structures/BPPTNode.h"
-#include "Structures/BPPTokenTree.h"
+#include "Structures/Error.h"
+#include "Structures/File.h"
+#include "Structures/ASTNode.h"
+#include "Structures/ASTTree.h"
 
 std::string startupMessage = "Welcome to B++ v0.2.\nPlease enter the name of a file to open:\n";
 
-void startProcess(BPPFile *readfile,BPPFile *writefile)
+void startProcess(File *readfile,File *writefile)
 {
 preParseContents(readfile);
-BPPTokenTree bt = assembleTree(readfile);
+ASTTree bt = assembleTree(readfile);
 /*
 bt->validateTree();
 std::cout << bt->dumpLog() << std::endl;
@@ -25,12 +25,12 @@ int main()
     std::cout << startupMessage;
     std::string fileToOpen;
     std::cin >> fileToOpen;
-    BPPFile sourceFile;
+    File sourceFile;
     sourceFile.read(fileToOpen);
     std::string fileToWrite;
     std::cout << "Enter the output filename:\n";
     std::cin >> fileToWrite;
-    BPPFile compileFile;
+    File compileFile;
     //compileFile.read(fileToWrite);
     startProcess(&sourceFile,&compileFile);
     /*

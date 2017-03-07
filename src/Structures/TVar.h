@@ -1,14 +1,14 @@
-#ifndef BPPTVAR_H
-#define BPPTVAR_H
+#ifndef TVAR_H
+#define TVAR_H
 #include "Libraries/shared.h"
 #include "Compiler/fail.h"
-class BPPTVar
+class TVar
 {
     public:
-        BPPTVar();
-        ~BPPTVar();
-        BPPTVar(std::string);
-        BPPTVar(std::string,std::string);
+        TVar();
+        ~TVar();
+        TVar(std::string);
+        TVar(std::string,std::string);
         std::string getType() {     return type; }
         void setType(std::string val) { type = val; }
         std::string getName() { return name; }
@@ -19,4 +19,4 @@ class BPPTVar
         std::string name;
 };
 
-#endif // BPPTVAR_H
+#endif // TVAR_H

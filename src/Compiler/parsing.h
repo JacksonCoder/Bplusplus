@@ -1,14 +1,14 @@
 #ifndef PARSING_H_INCLUDED
 #define PARSING_H_INCLUDED
-#include "Structures/BPPFile.h"
-#include "Structures/BPPTokenTree.h"
+#include "Structures/File.h"
+#include "Structures/ASTTree.h"
 
 enum IndentationType
 {
     SPACES,
     TABS
 };
-IndentationType getIndentationType(BPPFile* bfile)
+IndentationType getIndentationType(File* bfile)
 {
     for(int lines_i = 0; lines_i < bfile->lines.size();lines_i++)
     {
@@ -23,7 +23,7 @@ IndentationType getIndentationType(BPPFile* bfile)
     }
     return SPACES; //default
 }
-void stripWhitespace(BPPFile* file,IndentationType IT)
+void stripWhitespace(File* file,IndentationType IT)
 {
     /*
     switch(IT)
@@ -61,12 +61,12 @@ void stripWhitespace(BPPFile* file,IndentationType IT)
     }
     */
 }
-BPPTokenTree assembleTree(BPPFile* bfile)
+ASTTree assembleTree(File* bfile)
 {
 
-    BPPTokenTree returnValue;
+    ASTTree returnValue;
 
-    BPPTNode* attacher = returnValue.getRoot();
+    ASTNode* attacher = returnValue.getRoot();
 
     int scopelevel = 0;
 
@@ -120,7 +120,7 @@ BPPTokenTree assembleTree(BPPFile* bfile)
     return returnValue;
 }
 
-void preParseContents(BPPFile* bfile)
+void preParseContents(File* bfile)
 {
 
     IndentationType indentType = getIndentationType(bfile);
