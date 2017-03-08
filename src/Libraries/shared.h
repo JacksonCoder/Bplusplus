@@ -1,6 +1,6 @@
 #ifndef SHARED_H_INCLUDED
 #define SHARED_H_INCLUDED
-#include "Structures/tokenType.h"
+#include "../Structures/tokenType.h"
 #include <vector>
 #include <iostream>
 #include <string>
