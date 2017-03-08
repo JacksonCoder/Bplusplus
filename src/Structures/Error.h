@@ -1,6 +1,6 @@
 #ifndef ERROR_H
 #define ERROR_H
-#include "Libraries/shared.h"
+#include "../Libraries/shared.h"
 class Error
 {
     public:

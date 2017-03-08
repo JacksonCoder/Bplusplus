@@ -1,8 +1,8 @@
 #ifndef FILE_H
 #define FILE_H
-#include "Libraries/shared.h"
+#include "../Libraries/shared.h"
 #ifndef INCLUDEFAIL
-#include "Compiler/fail.h"
+#include "../Compiler/fail.h"
 #endif
 class File
 {

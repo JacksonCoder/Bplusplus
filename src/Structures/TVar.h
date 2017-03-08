@@ -1,7 +1,7 @@
 #ifndef TVAR_H
 #define TVAR_H
-#include "Libraries/shared.h"
-#include "Compiler/fail.h"
+#include "../Libraries/shared.h"
+#include "../Compiler/fail.h"
 class TVar
 {
     public:

@@ -1,8 +1,8 @@
 #ifndef ASTTree_H
 #define ASTTree_H
 #include "ASTNode.h"
-#include "Structures/tokenType.h"
-#include "Structures/Error.h"
+#include "tokenType.h"
+#include "Error.h"
 #include "TVar.h"
 class ASTNode;
 class ASTTree

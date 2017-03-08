@@ -1,9 +1,9 @@
 #ifndef ASTNode_H
 #define ASTNode_H
 #include <regex>
-#include "Structures/tokenType.h"
-#include "Structures/Error.h"
-#include "Structures/File.h"
+#include "tokenType.h"
+#include "Error.h"
+#include "File.h"
 #include "TVar.h"
 #include "ASTTree.h"
 class ASTTree;
