@@ -1,7 +1,7 @@
 #ifndef PARSING_H_INCLUDED
 #define PARSING_H_INCLUDED
-#include "Structures/File.h"
-#include "Structures/ASTTree.h"
+#include "../Structures/File.h"
+#include "../Structures/ASTTree.h"
 
 enum IndentationType
 {

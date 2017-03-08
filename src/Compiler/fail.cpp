@@ -1,4 +1,4 @@
-#include "Compiler/fail.h"
+#include "fail.h"
 void fail(std::string why)
 {
     std::cout<<"An error has occured while compiling. This is the message\n============================="<<std::endl;
