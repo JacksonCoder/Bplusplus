@@ -9,6 +9,7 @@ std::string ASTTree::type(std::string searcher,ASTNode* scope)
 {
     if(scope->variables.count(searcher))
     return scope->variables[searcher]->getType();
+    return "";
 }
 
 

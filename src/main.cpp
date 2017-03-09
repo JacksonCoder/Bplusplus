@@ -16,6 +16,7 @@ ASTTree bt = assembleTree(readfile);
 bt->validateTree();
 std::cout << bt->dumpLog() << std::endl;
 */
+std::cout<<"Everything working"<<std::endl;
 bt.getRoot()->assemble();
 std::cout << bt.getRoot()->getResult() << std::endl;
 }

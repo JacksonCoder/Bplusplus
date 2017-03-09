@@ -26,7 +26,9 @@ bool ASTNode::isFunction(std::string inputToken){
 }
 bool ASTNode::isFunctionA(std::string inputToken)
 {
+    std::cout<<"?"<<std::endl;
     std::smatch matches;
+    std::cout<<"?"<<std::endl;
     std::regex functionaindentifier("\\s?(\\w+)\\((.+)\\)");
     if(std::regex_match(inputToken,matches,functionaindentifier))
     {
@@ -48,12 +50,18 @@ bool ASTNode::isFunctionT(std::string inputToken)
 }
 bool ASTNode::isFunctionAT(std::string inputToken)
 {
-    std::regex functionatindentifier("\\s?(\\w+)\\s?\\(([\\w\\s:]+)\\)\\s?:\\s?(.+)");
+    try {
+    std::regex functionatindentifier(R"(\s?(\w+)\s?\(([\w\s:]+)\)\s?:\s?(\w+))");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,functionatindentifier))
     {
         setTokenMatches(matches);
         return true;
+    }
+    }
+    catch(std::regex_error& re)
+    {
+        std::cout<<"Caught!"<<re.code();
     }
     return false;
 }
@@ -157,7 +165,6 @@ Type ASTNode::determineType(std::string inputToken)
     {
         return IMPORTN;
     }
-
     return TEXT;
 }
 

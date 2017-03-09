@@ -1,5 +1,5 @@
 import native iostream
 import native fstream
-
-main(const awesome:int):int
+main(const awesome:int)
 	thing:cool = 3
+    return cool
