@@ -2,21 +2,12 @@
 #define TOKENLEXER_H
 #include "File.h"
 
-enum Token {
-    NAME,
-    LTERM,
-    OPAREN,
-    CPAREN,
-    COLON,
-    COMMA,
-};
-
-
 class TokenLexer
 {
     public:
         TokenLexer(File&);
         ~TokenLexer();
+        void construct();
     protected:
     private:
         File& lexerFile;

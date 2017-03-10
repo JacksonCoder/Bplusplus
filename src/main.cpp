@@ -5,7 +5,7 @@
 #include "Structures/File.h"
 #include "Structures/ASTNode.h"
 #include "Structures/ASTTree.h"
-
+#include "Structures/Compiler.h"
 std::string startupMessage = "Welcome to B++ v0.2.\nPlease enter the name of a file to open:\n";
 
 void startProcess(File *readfile,File *writefile)
@@ -21,9 +21,17 @@ bt.getRoot()->assemble();
 std::cout << bt.getRoot()->getResult() << std::endl;
 }
 
-int main()
+int main(int argc,char** argv)
 {
     std::cout << startupMessage;
+    /*
+    Compiler c(argc,argv);
+    c.prepare()
+    c.lex();
+    c.finish();
+    */
+    Compiler c(argc,argv);
+    c.prepare();
     std::string fileToOpen;
     std::cin >> fileToOpen;
     File sourceFile;

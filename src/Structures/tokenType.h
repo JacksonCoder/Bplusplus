@@ -4,7 +4,6 @@
 enum Type
 {
 IMPORTN,
-VARINDENTIFIER,
 RETURN,
 TEXT,
 ARGLIST,
@@ -20,4 +19,16 @@ VARDECA,
 ROOT
 };
 
+enum TokenType
+{
+    NAME,
+    VAR,
+    OPAREN,
+    CPAREN,
+    COMMA,
+    COLON,
+    EQUALS,
+    INDENT,
+    LTERM
+};
 #endif // TOKENTYPE_H_INCLUDED

@@ -9,3 +9,8 @@ TokenLexer::~TokenLexer()
 {
     //dtor
 }
+
+void TokenLexer::construct()
+{
+
+}
