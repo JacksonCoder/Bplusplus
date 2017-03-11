@@ -31,7 +31,7 @@ int main(int argc,char** argv)
     c.finish();
     */
     Compiler c(argc,argv);
-    c.prepare();
+    c.run();
     std::string fileToOpen;
     std::cin >> fileToOpen;
     File sourceFile;

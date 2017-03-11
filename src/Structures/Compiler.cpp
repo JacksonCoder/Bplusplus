@@ -18,7 +18,7 @@ void Compiler::standardCompileSetup()
 
 }
 
-void Compiler::prepare()
+void Compiler::run()
 {
         std::string firstarg = arguments[0];
         if(firstarg=="version")
