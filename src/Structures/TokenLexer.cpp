@@ -10,7 +10,7 @@ TokenLexer::~TokenLexer()
     //dtor
 }
 
-void TokenLexer::construct()
+void TokenLexer::construct(std::string filename)
 {
-
+    lexerFile.read(filename);
 }

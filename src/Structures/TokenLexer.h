@@ -7,7 +7,7 @@ class TokenLexer
     public:
         TokenLexer(File&);
         ~TokenLexer();
-        void construct();
+        void construct(std::string);
     protected:
     private:
         File& lexerFile;

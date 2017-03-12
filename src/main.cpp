@@ -16,7 +16,6 @@ ASTTree bt = assembleTree(readfile);
 bt->validateTree();
 std::cout << bt->dumpLog() << std::endl;
 */
-std::cout<<"Everything working"<<std::endl;
 bt.getRoot()->assemble();
 std::cout << bt.getRoot()->getResult() << std::endl;
 }
@@ -26,9 +25,10 @@ int main(int argc,char** argv)
     std::cout << startupMessage;
     /*
     Compiler c(argc,argv);
-    c.prepare()
+    c.run()
     c.lex();
     c.finish();
+    runcommand : cd src; clang++ -o ../bin/Debug/Compiler Structures/ASTNode.cpp Structures/ASTTree.cpp Structures/Compiler.cpp Structures/Error.cpp Structures/File.cpp Structures/Token.cpp Structures/TokenLexer.cpp Structures/TokenSegment.cpp Structures/TVar.cpp Compiler/fail.cpp main.cpp -std=c++11 -Wall -stdlib=libc++;cd ..
     */
     Compiler c(argc,argv);
     c.run();

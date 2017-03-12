@@ -55,6 +55,7 @@ bool ASTNode::isFunctionAT(std::string inputToken)
         setTokenMatches(matches);
         return true;
     }
+    
     return false;
 }
 bool ASTNode::isVarInit(std::string inputToken)

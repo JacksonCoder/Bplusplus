@@ -2,13 +2,14 @@
 #define COMPILER_H
 #include "../Libraries/shared.h"
 #include "ASTTree.h"
+#include "TokenLexer.h"
 #define VERSION_NUMBER 0.3
 class Compiler
 {
     public:
         Compiler(int,char**);
         ~Compiler();
-        void prepare();
+        void run();
         void lex();
         void finish();
     protected:
