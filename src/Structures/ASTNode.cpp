@@ -1,5 +1,20 @@
 #include "ASTNode.h"
 
+ASTNode::ASTNode(Type t) : tokenmatches()
+{
+    type = t;
+}
+
+ASTNode::ASTNode(TokenSegment token,ASTNode* parent) : token(token), tokenmatches(), parent(parent)
+{
+    type = this->determineType(this->token);
+}
+
+ASTNode::ASTNode(TokenSegment token) : token(token), tokenmatches()
+{
+    type = this->determineType(this->token);
+}
+
 void ASTNode::setTokenMatches(std::smatch match)
 {
     this->tokenmatches.assign(match.begin(),match.end());
@@ -114,8 +129,9 @@ bool ASTNode::isVarInitWithArguments(std::string inputToken)
     }
     return false;
 }
-Type ASTNode::determineType(std::string inputToken)
+Type ASTNode::determineType(TokenSegment inputToken)
 {
+    /*
     if(isFunctionAT(inputToken))
     {
         return FUNCTIONAT;
@@ -159,11 +175,7 @@ Type ASTNode::determineType(std::string inputToken)
         return IMPORTN;
     }
     return TEXT;
-}
-
-ASTNode::ASTNode(Type t) : tokenmatches()
-{
-    type = t;
+    */
 }
 
 void ASTNode::assembleSubNodes(ASTTree& tree)
@@ -306,15 +318,6 @@ void ASTNode::assembleSubNodes(ASTTree& tree)
         }
     }
 
-}
-ASTNode::ASTNode(std::string token,ASTNode* parent) : token(token), tokenmatches(), parent(parent)
-{
-    type = this->determineType(this->token);
-}
-
-ASTNode::ASTNode(std::string token) : token(token), tokenmatches()
-{
-    type = this->determineType(this->token);
 }
 
 ASTNode::~ASTNode()

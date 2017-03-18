@@ -9,3 +9,6 @@ Token::~Token()
 {
     //dtor
 }
+
+Token::Token(TokenType t,std::string s) : value(s), tokentype(t)
+{}

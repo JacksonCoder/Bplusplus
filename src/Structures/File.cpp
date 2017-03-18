@@ -11,9 +11,8 @@ void File::read(std::string filename)
     //stream file contents into local data;
     while(!stream.eof()){
             std::string temp;
-            stream >> temp;
-            contents+=temp;
-            if(stream.peek()=='\n') contents+='\n';
+            getline(stream,temp);
+            contents+=temp+'\n';
     }
     std::cout<<contents<<std::endl;
 }

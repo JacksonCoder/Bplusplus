@@ -1,8 +1,8 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 #include "../Libraries/shared.h"
-#include "ASTTree.h"
 #include "TokenLexer.h"
+#include "Module.h"
 #define VERSION_NUMBER 0.3
 class Compiler
 {
@@ -14,7 +14,7 @@ class Compiler
         void finish();
     protected:
     private:
-        std::vector<ASTTree*> modules;
+        Module* sourceModule;
         std::vector<std::string> arguments;
         void displayVersion();
         void standardCompileSetup();

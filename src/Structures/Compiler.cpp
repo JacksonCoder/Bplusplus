@@ -16,27 +16,32 @@ void Compiler::displayVersion()
 void Compiler::standardCompileSetup()
 {
     unsigned int sourceCount = 0;
+    std::string in,out;
     std::cout<<"SourceCount:"<<sourceCount<<std::endl;
     while(std::find(arguments.begin(),arguments.end(),"-source")!=arguments.end())
     {
         sourceCount++;
         std::vector<std::string>::iterator iter = std::find(arguments.begin(),arguments.end(),"-source") + 1;
         std::cout<<"Check this out:"<<*iter<<std::endl;
-        //File* sourceFile = new File;
-        //TokenLexer tl(*sourceFile);
-        //tl.construct(*iter);
-        arguments.erase(iter-1,iter);
+        in = *iter;
+        arguments.erase(iter-2,iter);
     }
-    std::cout<<"SourceCount:"<<sourceCount<<std::endl;
     if(sourceCount<1) fail("No source file specified");
     if(sourceCount>1) fail("You can only declare one source file");
-    while(std::find(arguments.begin(),arguments.end(),"-include")!=arguments.end())
+    unsigned int outCount = 0;
+    while(std::find(arguments.begin(),arguments.end(),"-out")!=arguments.end())
     {
-        std::vector<std::string>::iterator iter = std::find(arguments.begin(),arguments.end(),"-include") + 1;
+        outCount++;
+        std::vector<std::string>::iterator iter = std::find(arguments.begin(),arguments.end(),"-out") + 1;
         std::cout<<"Check this out:"<<*iter<<std::endl;
-        arguments.erase(iter-1,iter);
+        out = *iter;
+        arguments.erase(iter-2,iter);
     }
-    //NEXT: add module class, and then use them as a wrapper for ASTTrees
+     if(sourceCount<1) fail("No output file specified");
+    if(sourceCount>1) fail("You can only declare one output file");
+    sourceModule = new Module(in,out);
+    sourceModule->build();
+    //sourceModule->output();
 }
 
 void Compiler::run()

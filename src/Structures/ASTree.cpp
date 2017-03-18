@@ -21,14 +21,11 @@ bool ASTTree::varSearch(std::string searcher, ASTNode* scope)
 void ASTTree::setup()
 {
     root->assembleSubNodes(*this);
-    std::cout<<"Variables:"<<variables.size()<<std::endl;
-    for(std::map<std::string,TVar*>::iterator it=variables.begin(); it!=variables.end(); ++it) std::cout<<it->second->getName()<<std::endl<<it->second->getType()<<std::endl;
-    std::cout<<"s";
 }
 
-void ASTTree::addNodeTo(ASTNode* attachTo,std::string data)
+void ASTTree::addSegmentBranch(ASTNode* attachTo,TokenSegment ts)
 {
-    attachTo->branches.push_back(new ASTNode(data));
+    attachTo->branches.push_back(new ASTNode(ts));
     attachTo->branches.at(attachTo->branches.size()-1)->parent = attachTo;
 }
 ASTTree::~ASTTree()
@@ -66,4 +63,78 @@ void ASTTree::metaSetup()
         }
 
     }
+}
+
+
+enum IndentationType
+{
+    SPACES,
+    TABS
+};
+/*
+IndentationType getIndentationType(File* bfile)
+{
+    for(int lines_i = 0; lines_i < bfile->lines.size();lines_i++)
+    {
+        if(bfile->lines[lines_i][0] == ' ')
+        {
+            return SPACES;
+        }
+        if(bfile->lines[lines_i][0] == '\t')
+        {
+            return TABS;
+        }
+    }
+    return SPACES; //default
+}
+*/
+void ASTTree::build(TokenSegment tokenlist)
+{
+    ASTNode* attacher = root;
+    int scopelevel = 0;
+    bool processing = true;
+    unsigned int line=0,numberofindents = 0;
+    while(processing){
+        
+        numberofindents = tokenlist.countAmountOfTokensBetweenTermination(INDENT,line);
+        TokenSegment line = tokenlist.getLine(line);
+        if(numberofindents > scopelevel){
+
+            scopelevel++;
+
+            if(i>0){ attacher = attacher->branches[attacher->branches.size()-1]; }
+            else
+            {
+                fail("Error: unexpected lack of indentation!");
+            }
+            if(numberofindents > scopelevel)
+                {
+                fail("Error: unexpected lack of indentation!");
+            }
+        }
+        if(numberofindents < scopelevel){
+
+            scopelevel--;
+
+            if(i>0){ attacher = attacher->parent; }
+            else
+            {
+                fail("Error: unexpected lack of indentation!");
+            }
+            if(numberofindents > scopelevel)
+                {
+                fail("Error: unexpected lack of indentation!");
+            }
+        }
+        this->addSegmentBranch(attacher,line);
+        line++;
+    }
+    setup();
+    metaSetup();
+    return returnValue;
+}
+
+void preParseContents(File* bfile)
+{
+
 }

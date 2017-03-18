@@ -29,6 +29,7 @@ enum TokenType
     COLON,
     EQUALS,
     INDENT,
-    LTERM
+    LTERM,
+    TAB
 };
 #endif // TOKENTYPE_H_INCLUDED

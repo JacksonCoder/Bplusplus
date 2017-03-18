@@ -5,6 +5,9 @@
 class Token
 {
     public:
+        Token(TokenType,std::string);
+        TokenType getType(){ return tokentype; }
+        std::string getValue(){ return value; }
         Token();
         ~Token();
     protected:
@@ -12,5 +15,4 @@ class Token
     std::string value;
     TokenType tokentype;
 };
-
 #endif // TOKEN_H
