@@ -90,6 +90,7 @@ IndentationType getIndentationType(File* bfile)
 */
 void ASTTree::build(TokenSegment tokenlist)
 {
+    //iterate instead by tokens, not LTERMS
     ASTNode* attacher = root;
     int scopelevel = 0;
     bool processing = true;
@@ -126,15 +127,10 @@ void ASTTree::build(TokenSegment tokenlist)
                 fail("Error: unexpected lack of indentation!");
             }
         }
-        this->addSegmentBranch(attacher,line);
+        this->addSegmentBranch(attacher,line); //this is where the top-level creation happens
         line++;
     }
     setup();
     metaSetup();
     return returnValue;
-}
-
-void preParseContents(File* bfile)
-{
-
 }

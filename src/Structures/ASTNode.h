@@ -17,27 +17,30 @@ class ASTNode
         ~ASTNode();
         ASTNode(TokenSegment);
         ASTNode(TokenSegment,ASTNode*);
-        ASTNode(TokenSegment ts,Type t): token(ts),type(t) {}
+        ASTNode(TokenSegment ts,Type t): tokenseg(ts),type(t) {token=tokenseg.getStringValue();}
+        ASTNode(std::string,ASTNode*);
+        ASTNode(std::string);
         Type getType(){ return type;}
         Error assemble();
         void assembleSubNodes(ASTTree&);
-        Type determineType(std::string);
-        TokenSegment getToken(){ return token;}
+        Type determineType(TokenSegment);
+        std::string getToken(){ return token;}
+        TokenSegment getTokenSegment() { return tokenseg; }
         std::string getResult(){ return result;}
-        void setToken(TokenSegment t){token=t;}
+        void setToken(std::string t){token=t;}
         std::vector<ASTNode*> branches;
         ASTNode* parent;
         void setTokenMatches(std::smatch);
-        bool isArglist(std::string);
-        bool isFunction(std::string);
-        bool isFunctionA(std::string);
-        bool isFunctionT(std::string);
-        bool isFunctionAT(std::string);
-        bool isVarInit(std::string);
-        bool isVarDecl(std::string);
-        bool isImportStatement(std::string);
-        bool isReturnStatement(std::string);
-        bool isVarInitWithArguments(std::string);
+        bool isArglist(TokenSegment);
+        bool isFunction(TokenSegment);
+        bool isFunctionA(TokenSegment);
+        bool isFunctionT(TokenSegment);
+        bool isFunctionAT(TokenSegment);
+        bool isVarInit(TokenSegment);
+        bool isVarDecl(TokenSegment);
+        bool isImportStatement(TokenSegment);
+        bool isReturnStatement(TokenSegment);
+        bool isVarInitWithArguments(TokenSegment);
         std::map<std::string,ASTNode*> data;
         std::map<std::string,ASTNode*> metaData;
         std::map<std::string,TVar*> variables;
@@ -48,7 +51,8 @@ class ASTNode
 
         Type type;
         std::vector<std::string> tokenmatches;
-        TokenSegment token;
+        TokenSegment tokenseg;
+        std::string token;
         std::string result;
 };
 //#include "ASTTree.h"

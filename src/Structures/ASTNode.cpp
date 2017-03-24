@@ -5,22 +5,34 @@ ASTNode::ASTNode(Type t) : tokenmatches()
     type = t;
 }
 
-ASTNode::ASTNode(TokenSegment token,ASTNode* parent) : token(token), tokenmatches(), parent(parent)
+ASTNode::ASTNode(TokenSegment ts,ASTNode* parent) : tokenseg(ts), tokenmatches(), parent(parent)
 {
-    type = this->determineType(this->token);
+    token = ts.getStringValue();
+    type = this->determineType(this->tokenseg);
 }
 
-ASTNode::ASTNode(TokenSegment token) : token(token), tokenmatches()
+ASTNode::ASTNode(TokenSegment ts) : tokenseg(token), tokenmatches()
 {
-    type = this->determineType(this->token);
+    token = ts.getStringValue();
+    type = this->determineType(this->tokenseg);
 }
 
+ASTNode(std::string s ,ASTNode* parent) : token(s), tokenmatches(), parent(parent)
+{
+    
+}
+ASTNode(std::string s) : token(s), tokenmatches()
+{
+    
+}
 void ASTNode::setTokenMatches(std::smatch match)
 {
     this->tokenmatches.assign(match.begin(),match.end());
 }
-bool ASTNode::isArglist(std::string inputToken)
+bool ASTNode::isArglist(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue(); //do this for everything
+    
     std::regex arglist("([^\\(\\)]+),([^\\(\\)]+)");
     if(std::regex_search(inputToken,arglist)){
         return true;
@@ -29,7 +41,9 @@ bool ASTNode::isArglist(std::string inputToken)
     return false;
 }
 
-bool ASTNode::isFunction(std::string inputToken){
+bool ASTNode::isFunction(TokenSegment ts)
+{
+    std::string inputToken = ts.getStringValue();
     std::smatch matches;
     std::regex functionindentifier("\\s?(\\w+)\\(\\)");
     if(std::regex_match(inputToken,matches,functionindentifier))
@@ -39,8 +53,9 @@ bool ASTNode::isFunction(std::string inputToken){
     }
     return false;
 }
-bool ASTNode::isFunctionA(std::string inputToken)
+bool ASTNode::isFunctionA(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::smatch matches;
     std::regex functionaindentifier("\\s?(\\w+)\\((.+)\\)");
     if(std::regex_match(inputToken,matches,functionaindentifier))
@@ -50,8 +65,9 @@ bool ASTNode::isFunctionA(std::string inputToken)
     }
     return false;
 }
-bool ASTNode::isFunctionT(std::string inputToken)
+bool ASTNode::isFunctionT(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::regex functiontindentifier("\\s?(\\w+)\\s?\\(\\)\\s?:\\s?(.+)");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,functiontindentifier))
@@ -61,8 +77,9 @@ bool ASTNode::isFunctionT(std::string inputToken)
     }
     return false;
 }
-bool ASTNode::isFunctionAT(std::string inputToken)
+bool ASTNode::isFunctionAT(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::regex functionatindentifier("\\s?(\\w+)\\s?\\(([\\w\\s:]+)\\)\\s?:\\s?(\\w+)");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,functionatindentifier))
@@ -73,8 +90,9 @@ bool ASTNode::isFunctionAT(std::string inputToken)
     
     return false;
 }
-bool ASTNode::isVarInit(std::string inputToken)
+bool ASTNode::isVarInit(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::regex varinit("^(\\w+):(\\w+)$");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,varinit))
@@ -84,8 +102,9 @@ bool ASTNode::isVarInit(std::string inputToken)
     }
     return false;
 }
-bool ASTNode::isVarDecl(std::string inputToken)
+bool ASTNode::isVarDecl(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::regex vardeclaration("\\s?(\\w+):(\\w+)\\s?=\\s?(.+)");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,vardeclaration))
@@ -95,8 +114,9 @@ bool ASTNode::isVarDecl(std::string inputToken)
     }
     return false;
 }
-bool ASTNode::isImportStatement(std::string inputToken)
+bool ASTNode::isImportStatement(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::regex importnidentifier("^\\s?import\\s?native\\s?(.+)$");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,importnidentifier))
@@ -106,8 +126,9 @@ bool ASTNode::isImportStatement(std::string inputToken)
     }
     return false;
 }
-bool ASTNode::isReturnStatement(std::string inputToken)
+bool ASTNode::isReturnStatement(TokenSegment ts)
 {
+    std::string inputToken = ts.getStringValue();
     std::regex returnidentifier("^\\s?return(.+)$");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,returnidentifier))
@@ -117,9 +138,9 @@ bool ASTNode::isReturnStatement(std::string inputToken)
     }
     return false;
 }
-bool ASTNode::isVarInitWithArguments(std::string inputToken)
+bool ASTNode::isVarInitWithArguments(TokenSegment ts)
 {
-
+    std::string inputToken = ts.getStringValue();
     std::regex varinita("^\\s?([\\w\\s]+)\\s(\\w+:\\w+)$");
     std::smatch matches;
     if(std::regex_match(inputToken,matches,varinita))
@@ -129,53 +150,51 @@ bool ASTNode::isVarInitWithArguments(std::string inputToken)
     }
     return false;
 }
-Type ASTNode::determineType(TokenSegment inputToken)
+Type ASTNode::determineType(TokenSegment ts)
 {
-    /*
-    if(isFunctionAT(inputToken))
+    if(isFunctionAT(ts))
     {
         return FUNCTIONAT;
     }
-    if(isFunctionT(inputToken))
+    if(isFunctionT(ts))
     {
         return FUNCTIONT;
     }
 
-    if(isFunctionA(inputToken))
+    if(isFunctionA(ts))
     {
         return FUNCTIONA;
     }
 
-    if(isFunction(inputToken))
+    if(isFunction(ts))
     {
         return FUNCTION;
     }
-    if(isVarInitWithArguments(inputToken)){
+    if(isVarInitWithArguments(ts)){
         return VARINITA;
     }
-    if(isArglist(inputToken))
+    if(isArglist(ts))
     {
         return ARGLIST;
     }
-    if(isVarDecl(inputToken))
+    if(isVarDecl(ts))
     {
         return VARDEC;
     }
 
-    if(isVarInit(inputToken))
+    if(isVarInit(ts))
     {
         return VARINIT;
     }
-    if(isReturnStatement(inputToken))
+    if(isReturnStatement(ts))
     {
         return RETURN;
     }
-    if(isImportStatement(inputToken))
+    if(isImportStatement(ts))
     {
         return IMPORTN;
     }
     return TEXT;
-    */
 }
 
 void ASTNode::assembleSubNodes(ASTTree& tree)
@@ -347,9 +366,8 @@ ASTNode* ASTNode::findBranch(Type t)
 }
 */
 
-Error ASTNode::assemble()
+void ASTNode::assemble()
 {
-    Error assembleError;
     switch(type) {
 
 case ARGLIST:
@@ -514,6 +532,4 @@ case ARGLIST:
             result += "\n}";
             break;
     }
-
-    return assembleError;
 }

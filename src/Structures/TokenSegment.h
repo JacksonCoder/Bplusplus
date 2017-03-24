@@ -12,6 +12,25 @@ class TokenSegment
         void push_back(TokenType,std::string);
         int size(){ return tokens.size(); }
         Token at(int loc) { return tokens.at(loc); }
+        std::string getStringValue()
+        {
+            std::string ret;
+            for(auto t : tokens)
+            {
+                ret += t.getValue();
+            }
+        }
+        Token nthTokenOf(TokenType t, unsigned int i)
+        {
+            int inc = 0;
+            for(auto ti : tokens)
+            {
+                if(ti.getType()==t) inc++;
+                if(inc==i) return ti;
+            }
+            fail("Internal error: Token not found!");
+            return tokens[0]; //I have to put this there to avoid compiler message
+        }
         bool tokenSequencePresent(std::initializer_list<TokenType> list)
         {
             std::vector<Token>::iterator iter = tokens.begin();
@@ -24,7 +43,8 @@ class TokenSegment
             }
             return true;
         }
-        TokenSegment getLine(int linenumber) {
+        TokenSegment getLine(int linenumber) 
+        {
             std::vector<Token>::iterator iter = tokens.begin();
             while(linenumber>0)
             {

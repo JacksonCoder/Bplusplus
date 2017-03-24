@@ -1,11 +1,9 @@
 #include "Libraries/shared.h"
-//#include "Compiler/parsing.h"
-//#include "Structures/tokenType.h"
-//#include "Structures/Error.h"
-//#include "Structures/File.h"
-//#include "Structures/ASTNode.h"
-//#include "Structures/ASTTree.h"
-//#include "Structures/Compiler.h"
+#include "Structures/tokenType.h"
+#include "Structures/File.h"
+#include "Structures/ASTNode.h"
+#include "Structures/ASTTree.h"
+#include "Structures/Compiler.h"
 #include "Structures/TokenSegment.h"
 std::string startupMessage = "Welcome to B++ v0.2.\nPlease enter the name of a file to open:\n";
 /*
