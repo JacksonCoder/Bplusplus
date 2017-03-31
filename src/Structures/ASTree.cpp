@@ -2,7 +2,7 @@
 
 ASTTree::ASTTree()
 {
-    root = new ASTNode(ROOT);
+
 }
 
 std::string ASTTree::type(std::string searcher,ASTNode* scope)
@@ -50,20 +50,6 @@ void ASTTree::varAdd(std::string name, std::string type,ASTNode* attacher)
     attacher->variables[name] = new TVar(name,type);
 }
 
-void ASTTree::metaSetup()
-{
-    ASTNode* astIterator = root;
-    for(auto b : astIterator->branches)
-    {
-        if(b->getType() == FUNCTION || b->getType() == FUNCTIONA)
-        { //Later, I need to add parsing features to find the type of this function
-            ASTNode* returnKeyword = searchBranches(b,RETURN);
-            std::string type = returnKeyword->data["returntype"]->getToken();
-            b->metaData["type"]->setToken(type);
-        }
-
-    }
-}
 
 
 enum IndentationType
@@ -90,47 +76,7 @@ IndentationType getIndentationType(File* bfile)
 */
 void ASTTree::build(TokenSegment tokenlist)
 {
-    //iterate instead by tokens, not LTERMS
-    ASTNode* attacher = root;
-    int scopelevel = 0;
-    bool processing = true;
-    unsigned int line=0,numberofindents = 0;
-    while(processing){
-        
-        numberofindents = tokenlist.countAmountOfTokensBetweenTermination(INDENT,line);
-        TokenSegment line = tokenlist.getLine(line);
-        if(numberofindents > scopelevel){
-
-            scopelevel++;
-
-            if(i>0){ attacher = attacher->branches[attacher->branches.size()-1]; }
-            else
-            {
-                fail("Error: unexpected lack of indentation!");
-            }
-            if(numberofindents > scopelevel)
-                {
-                fail("Error: unexpected lack of indentation!");
-            }
-        }
-        if(numberofindents < scopelevel){
-
-            scopelevel--;
-
-            if(i>0){ attacher = attacher->parent; }
-            else
-            {
-                fail("Error: unexpected lack of indentation!");
-            }
-            if(numberofindents > scopelevel)
-                {
-                fail("Error: unexpected lack of indentation!");
-            }
-        }
-        this->addSegmentBranch(attacher,line); //this is where the top-level creation happens
-        line++;
-    }
-    setup();
-    metaSetup();
-    return returnValue;
+    //top level recursive assembly
+    root = ASTNode::assembleTop(tokenlist); //top level function that sets the tree up
+    root.finish(); //resolves compile-time dependencies from variable inferencing
 }

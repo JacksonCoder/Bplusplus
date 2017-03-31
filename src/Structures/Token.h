@@ -5,11 +5,12 @@
 class Token
 {
     public:
-        Token(TokenType,std::string);
+        Token(TokenType,std::string,int);
         TokenType getType(){ return tokentype; }
         std::string getValue(){ return value; }
         Token();
         ~Token();
+        unsigned int scopenumber;
     protected:
     private:
     std::string value;

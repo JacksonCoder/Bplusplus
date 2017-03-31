@@ -2,6 +2,7 @@
 #define MODULE_H
 #include "../Libraries/shared.h"
 #include "TokenLexer.h"
+//#include "ASTTree.h"
 class Module 
 {
     public:
@@ -12,7 +13,7 @@ class Module
     private:
     std::string infile;
     std::string outfile;
-    //ASTTree tree;
+    ASTTree tree;
     TokenLexer lex;
 };
 #endif

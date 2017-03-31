@@ -8,4 +8,6 @@
 #include <fstream>
 #include <map>
 #include <algorithm>
+#include <cassert>
+#include <regex>
 #endif // SHARED_H_INCLUDED

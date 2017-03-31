@@ -10,7 +10,8 @@ Compiler::Compiler(int argc,char** argv)
 
 void Compiler::displayVersion()
 {
-        std::cout<<"=========================\nThe current version for this compiler is "<<VERSION_NUMBER<<"\n";
+        std::cout<<"=========================\nThe current version for this compiler is "<<VERSION_NUMBER<<"\n"
+        << "Created by Jackson Lewis. Last updated March 28th 2017.\n(c) Jackson Lewis 2017. All Rights Reserved.";
 }
 
 void Compiler::standardCompileSetup()

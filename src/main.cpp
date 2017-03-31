@@ -28,19 +28,21 @@ std::cout << bt.getRoot()->getResult() << std::endl;
 */
 int main(int argc,char** argv)
 {
-    /*
-    Compiler c(argc,argv);
-    c.run()
-    c.lex();
-    c.finish();
+/*
     runcommand : cd src; clang++ -o ../bin/Debug/Compiler Structures/ASTNode.cpp Structures/ASTTree.cpp Structures/Compiler.cpp Structures/Error.cpp Structures/File.cpp Structures/Token.cpp Structures/TokenLexer.cpp Structures/TokenSegment.cpp Structures/TVar.cpp Structures/Module.cpp Compiler/fail.cpp main.cpp -std=c++11 -Wall -stdlib=libc++;cd ..
     tokensegmentTest : cd src; clang++ -o ../bin/Debug/Compiler Structures/TokenSegment.cpp main.cpp -std=c++1y stdlib=libc++
-    */
+*/  
     //Current stage: testing
-    Compiler c(argc,argv);
-    c.run();
-    TokenSegment ts;
-    std::cout<<ts.tokenSequencePresent({NAME,NAME});
+    #ifndef TESTING
+    //Compiler c(argc,argv);
+    //c.run();
+    //TokenSegment ts;
+    TokenLexer tl;
+    tl.construct(argv[2]);
+    std::cout<<tl.out.tokens[1].getValue()<<tl.out.tokens[2].getValue();
     std::cout << "Compilation sucessful!\n";
+    #else
+    //put tests
+    #endif
     return 0;
 }

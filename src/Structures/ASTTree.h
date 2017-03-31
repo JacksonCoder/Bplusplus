@@ -15,8 +15,6 @@ class ASTTree
         ~ASTTree();
         void setup();
         ASTNode* getRoot(){ return root;}
-        bool isError(){ return error.errorExists();}
-        Error& getError(){ return error;}
         void addNodeTo(ASTNode*,std::string);
         void metaSetup();
         void varAdd(std::string,std::string,ASTNode*);
@@ -25,12 +23,7 @@ class ASTTree
         void build(TokenSegment);
     protected:
     private:
-
-        std::map<std::string,TVar*> variables; //<- for version 0.2
-        std::map<std::string,TVar*> functions; //<- for version 0.2
-
-         ASTNode* root; //!< Member variable "root"
-         Error error;
+         ASTNode* root;
 };
 
 #endif // ASTTree_H

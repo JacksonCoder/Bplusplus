@@ -1,5 +1,5 @@
 #include "ASTNode.h"
-
+/*
 ASTNode::ASTNode(Type t) : tokenmatches()
 {
     type = t;
@@ -16,187 +16,121 @@ ASTNode::ASTNode(TokenSegment ts) : tokenseg(token), tokenmatches()
     token = ts.getStringValue();
     type = this->determineType(this->tokenseg);
 }
+*/
+ASTNode::ASTNode(Type t): type(t)
+{}
+ASTNode* ASTNode::assembleTop(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(ROOT);
+    bool processing = true;
+    while(processing)
+    {
+    std::vector<Token> line;
+    std::vector<Token>::iterator line_delimiter_iter = ts.tokens.begin();
+    while(line_delimiter_iter->getType()!=TERM) 
+    { 
+        line.push_back(*line_delimiter_iter); 
+        line_delimiter_iter++; 
+        if(ASTNode::checkIdentification(line,FUNCTIONHEAD)){
+            while(line_delimiter_iter->getType()!=FUNCTIONEND)
+            {
+                line_delimiter_iter++;
+                line.push_back(*line_delimiter_iter);
+            }
+            return_node->branches.push_back(assembleFunction(TokenSegment(line)));
+            continue;
+        } 
+    }
+    return_node->branches.push_back(assembleCmd(TokenSegment(line)));
+    }
+    return return_node;
+}
 
-ASTNode(std::string s ,ASTNode* parent) : token(s), tokenmatches(), parent(parent)
+ASTNode* ASTNode::assembleFunc(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(FUNCTION);
+    //assemble the top first
+    std::vector<Token> top;
+    std::vector<Token> body;
+    std::vector<Token>::iterator delimiter_iter = ts.tokens.begin();
+    while(line_delimiter_iter->getType()!=TERM)
+    {
+        delimiter_iter++;
+        top.push_back(*delimiter_iter);
+    }
+    return_node->branches.push_back(ASTNode::assembleFunctionHeader(TokenSegment(top)));
+    while(delimiter_iter!=ts.tokens.end()) //<- does it compare classes if you have a iterator?
+    {
+        delimiter_iter++;
+        body.push_back(*delimiter_iter);
+    }
+    return_node->branches.push_back(assembleCmdSeq(body));
+    //Notes:
+    // Make sure that all low-level data is brought to the root for the final process
+    return return_node;
+}
+ASTNode* ASTNode::assembleFunctionHeader(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(FUNCTIONHEAD);
+    
+        //both args and type
+        return_node->data["name"] = new ASTNode(FUNCNAME); //<- No further work needs to be done: it is just a pure string
+        return_node->data["name"]->setToken(ts.nthTokenOf(NAME,1).getValue()); //<- put this line and previous into other function?
+        return_node->data["args"] = ASTNode::assembleVarList(ts.getBetween(OPAREN,CPAREN)); //TokenSegment should handle this
+    
+    return return_node;
+}
+static ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(CMDSEQ);
+    std::vector<Token>::iterator iter;
+    while(iter->getType != TOKENEND)
+    {
+        TokenSegment cmd;
+        while(iter->getType() != TERM){ iter++; cmd.push_back(*iter); }
+        return_node->branches.push_back(ASTNode::assembleCmd(cmd));
+    }
+    return return_node;
+}
+ASTNode* ASTNode::assembleCmd(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(CMD);
+    //find type of command: single line, or loop?
+    if(checkIdentification(cmd,LOOP))
+    {
+        return_node->branches.push_back(ASTNode::assembleLoop(ts));
+    }
+    else
+    {
+        if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
+        else if(ASTNode::checkIdentification(ts,VARSET)) return_node->branches.push_back(ASTNode::assembleVariableAssignment(ts));
+        //else if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
+    }
+    return return_node;
+}
+bool ASTNode::checkIdentification(TokenSegment ts,Type t)
+{
+    switch(t){
+        case LOOP:
+        {
+            if(ts.nthTokenOf(IFKEYWORD,1)) 
+            {
+                return true;
+            }
+            return false;
+        }
+        case FUNCTIONHEAD:
+        {
+            return false;   
+        }
+    }
+}
+/*
+ASTNode* ASTNode::assembleLoop(TokenSegment ts)
 {
     
 }
-ASTNode(std::string s) : token(s), tokenmatches()
-{
-    
-}
-void ASTNode::setTokenMatches(std::smatch match)
-{
-    this->tokenmatches.assign(match.begin(),match.end());
-}
-bool ASTNode::isArglist(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue(); //do this for everything
-    
-    std::regex arglist("([^\\(\\)]+),([^\\(\\)]+)");
-    if(std::regex_search(inputToken,arglist)){
-        return true;
-
-    }
-    return false;
-}
-
-bool ASTNode::isFunction(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::smatch matches;
-    std::regex functionindentifier("\\s?(\\w+)\\(\\)");
-    if(std::regex_match(inputToken,matches,functionindentifier))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isFunctionA(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::smatch matches;
-    std::regex functionaindentifier("\\s?(\\w+)\\((.+)\\)");
-    if(std::regex_match(inputToken,matches,functionaindentifier))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isFunctionT(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex functiontindentifier("\\s?(\\w+)\\s?\\(\\)\\s?:\\s?(.+)");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,functiontindentifier))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isFunctionAT(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex functionatindentifier("\\s?(\\w+)\\s?\\(([\\w\\s:]+)\\)\\s?:\\s?(\\w+)");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,functionatindentifier))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    
-    return false;
-}
-bool ASTNode::isVarInit(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex varinit("^(\\w+):(\\w+)$");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,varinit))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isVarDecl(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex vardeclaration("\\s?(\\w+):(\\w+)\\s?=\\s?(.+)");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,vardeclaration))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isImportStatement(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex importnidentifier("^\\s?import\\s?native\\s?(.+)$");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,importnidentifier))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isReturnStatement(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex returnidentifier("^\\s?return(.+)$");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,returnidentifier))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-bool ASTNode::isVarInitWithArguments(TokenSegment ts)
-{
-    std::string inputToken = ts.getStringValue();
-    std::regex varinita("^\\s?([\\w\\s]+)\\s(\\w+:\\w+)$");
-    std::smatch matches;
-    if(std::regex_match(inputToken,matches,varinita))
-    {
-        setTokenMatches(matches);
-        return true;
-    }
-    return false;
-}
-Type ASTNode::determineType(TokenSegment ts)
-{
-    if(isFunctionAT(ts))
-    {
-        return FUNCTIONAT;
-    }
-    if(isFunctionT(ts))
-    {
-        return FUNCTIONT;
-    }
-
-    if(isFunctionA(ts))
-    {
-        return FUNCTIONA;
-    }
-
-    if(isFunction(ts))
-    {
-        return FUNCTION;
-    }
-    if(isVarInitWithArguments(ts)){
-        return VARINITA;
-    }
-    if(isArglist(ts))
-    {
-        return ARGLIST;
-    }
-    if(isVarDecl(ts))
-    {
-        return VARDEC;
-    }
-
-    if(isVarInit(ts))
-    {
-        return VARINIT;
-    }
-    if(isReturnStatement(ts))
-    {
-        return RETURN;
-    }
-    if(isImportStatement(ts))
-    {
-        return IMPORTN;
-    }
-    return TEXT;
-}
-
+/*
 void ASTNode::assembleSubNodes(ASTTree& tree)
 {
     determineType(this->getToken());
@@ -239,7 +173,7 @@ void ASTNode::assembleSubNodes(ASTTree& tree)
         }
     case FUNCTION:
         {
-        this->metaData["type"] = new ASTNode("void",this);
+        this->metaData["type"] = new ASTNode(TokenSegment(Token(VOIDTYPE,"void")),this);
         this->data["name"] = new ASTNode(tokenmatches[1],TEXT); //ADDTO
         for(std::map<std::string,ASTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ ASTNode* b = it->second; b->assembleSubNodes(tree); }
          for(int branches_i = 0; branches_i < branches.size(); branches_i ++ )
@@ -250,7 +184,7 @@ void ASTNode::assembleSubNodes(ASTTree& tree)
         }
     case FUNCTIONA:
         {
-        this->metaData["type"] = new ASTNode("void",this);
+        this->metaData["type"] = new ASTNode(TokenSegment(Token(VOIDTYPE,"void")),this);
         this->data["name"] = new ASTNode(tokenmatches[1],TEXT); //2 ADDTO
         this->data["arglist"] = new ASTNode(tokenmatches[2],ARGLIST);
         for(std::map<std::string,ASTNode*>::iterator it=data.begin(); it!=data.end(); ++it){ ASTNode* b = it->second; b->assembleSubNodes(tree); }
@@ -338,7 +272,7 @@ void ASTNode::assembleSubNodes(ASTTree& tree)
     }
 
 }
-
+*/
 ASTNode::~ASTNode()
 {
     for(int branch_i = 0; branch_i < branches.size();branch_i++)
@@ -346,25 +280,6 @@ ASTNode::~ASTNode()
         delete branches[branch_i];
     }
 }
-
-/*
-Error ASTNode::appendToBranch(Type t)
-{
-    ASTNode* newnode = new ASTNode(t);
-    this->branches.push_back(newnode);
-}
-
-ASTNode* ASTNode::findBranch(Type t)
-{
-    for(int vect_i = 0; vect_i < branches.size();vect_i++)
-    {
-        if(branches[vect_i]->getType() == t){
-            return branches[vect_i];
-        }
-    }
-    return nullptr;
-}
-*/
 
 void ASTNode::assemble()
 {

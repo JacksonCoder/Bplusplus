@@ -10,8 +10,8 @@ class TokenLexer
         ~TokenLexer();
         void construct(std::string);
         TokenSegment getOutput() { return out; }
-    protected:
-    private:
+    //protected:
+    //private:
         std::string source;
         TokenSegment out;
 };

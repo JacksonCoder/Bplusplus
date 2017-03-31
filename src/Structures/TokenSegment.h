@@ -8,10 +8,22 @@ class TokenSegment
     public:
         TokenSegment();
         ~TokenSegment();
+        TokenSegment(std::vector<Token> tokens): tokens(tokens) {}
+        TokenSegment(Token t) { tokens.push_back(t); }
+        void next() { currentInc++;}
+        Token get(){ return tokens[currentInc]; }
         std::vector<Token>& getList(){ return tokens; }
-        void push_back(TokenType,std::string);
+        void push_back(TokenType,std::string,int);
         int size(){ return tokens.size(); }
         Token at(int loc) { return tokens.at(loc); }
+        TokenSegment getBetween(TokenType first, TokenType second)
+        {
+            std::vector<Token>::iterator iter = tokens.begin();
+            while(iter->getType() != first) iter++;
+            TokenSegment ret;
+            while(iter->getType() != second){ iter++;ret.tokens.push_back(*iter); }
+            return ret;
+        }
         std::string getStringValue()
         {
             std::string ret;
@@ -38,7 +50,7 @@ class TokenSegment
             {
                 while (iter->getType() != l) {
                 iter++; if(iter->getType() == l) continue;
-                if(iter->getType()==LTERM) return false;
+                if(iter->getType()==TERM) return false;
                 }
             }
             return true;
@@ -49,12 +61,12 @@ class TokenSegment
             while(linenumber>0)
             {
                 iter++;
-                if(iter->getType() == LTERM) linenumber--;
+                if(iter->getType() == TERM) linenumber--;
             }
             iter++;
             TokenSegment ret;
             //TOWORK ON: FIX ITER POINTER, SETUP LEXER TEST
-            while(iter->getType() != LTERM)
+            while(iter->getType() != TERM)
             {
                 ret.append(*iter);
                 iter++;
@@ -83,9 +95,11 @@ class TokenSegment
         }
         */
         void append(Token t){ tokens.push_back(t); }
+            std::vector<Token> tokens;
     protected:
     private:
-    std::vector<Token> tokens;
+    int currentInc = 0;
+    std::string cached;
 };
 
 #endif // TOKENSEGMENT_H
