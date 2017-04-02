@@ -37,7 +37,7 @@ ASTNode* ASTNode::assembleTop(TokenSegment ts)
                 line_delimiter_iter++;
                 line.push_back(*line_delimiter_iter);
             }
-            return_node->branches.push_back(assembleFunction(TokenSegment(line)));
+            return_node->branches.push_back(assembleFunc(TokenSegment(line)));
             continue;
         } 
     }
@@ -53,7 +53,7 @@ ASTNode* ASTNode::assembleFunc(TokenSegment ts)
     std::vector<Token> top;
     std::vector<Token> body;
     std::vector<Token>::iterator delimiter_iter = ts.tokens.begin();
-    while(line_delimiter_iter->getType()!=TERM)
+    while(delimiter_iter->getType()!=TERM)
     {
         delimiter_iter++;
         top.push_back(*delimiter_iter);
@@ -69,6 +69,7 @@ ASTNode* ASTNode::assembleFunc(TokenSegment ts)
     // Make sure that all low-level data is brought to the root for the final process
     return return_node;
 }
+/*
 ASTNode* ASTNode::assembleFunctionHeader(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(FUNCTIONHEAD);
@@ -76,18 +77,19 @@ ASTNode* ASTNode::assembleFunctionHeader(TokenSegment ts)
         //both args and type
         return_node->data["name"] = new ASTNode(FUNCNAME); //<- No further work needs to be done: it is just a pure string
         return_node->data["name"]->setToken(ts.nthTokenOf(NAME,1).getValue()); //<- put this line and previous into other function?
-        return_node->data["args"] = ASTNode::assembleVarList(ts.getBetween(OPAREN,CPAREN)); //TokenSegment should handle this
+        //return_node->data["args"] = ASTNode::assembleVarList(ts.getBetween(OPAREN,CPAREN)); //TokenSegment should handle this
     
     return return_node;
 }
-static ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts)
+*/
+ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(CMDSEQ);
     std::vector<Token>::iterator iter;
     while(iter->getType != TOKENEND)
     {
         TokenSegment cmd;
-        while(iter->getType() != TERM){ iter++; cmd.push_back(*iter); }
+        while(iter->getType() != TERM){ iter++; cmd.push_back(iter->getType(),iter->getValue(),iter->scopenumber); }
         return_node->branches.push_back(ASTNode::assembleCmd(cmd));
     }
     return return_node;
@@ -96,7 +98,7 @@ ASTNode* ASTNode::assembleCmd(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(CMD);
     //find type of command: single line, or loop?
-    if(checkIdentification(cmd,LOOP))
+    if(checkIdentification(ts,LOOP))
     {
         return_node->branches.push_back(ASTNode::assembleLoop(ts));
     }

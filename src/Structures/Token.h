@@ -8,6 +8,8 @@ class Token
         Token(TokenType,std::string,int);
         TokenType getType(){ return tokentype; }
         std::string getValue(){ return value; }
+        void setType(TokenType t){ tokentype = t; }
+        void setValue(std::string s){ value = s; }
         Token();
         ~Token();
         unsigned int scopenumber;

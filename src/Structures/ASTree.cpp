@@ -5,52 +5,10 @@ ASTTree::ASTTree()
 
 }
 
-std::string ASTTree::type(std::string searcher,ASTNode* scope)
-{
-    if(scope->variables.count(searcher))
-    return scope->variables[searcher]->getType();
-}
-
-
-bool ASTTree::varSearch(std::string searcher, ASTNode* scope)
-{
-    if(scope->variables.count(searcher)) return true;
-    return false;
-}
-
-void ASTTree::setup()
-{
-    root->assembleSubNodes(*this);
-}
-
-void ASTTree::addSegmentBranch(ASTNode* attachTo,TokenSegment ts)
-{
-    attachTo->branches.push_back(new ASTNode(ts));
-    attachTo->branches.at(attachTo->branches.size()-1)->parent = attachTo;
-}
 ASTTree::~ASTTree()
 {
     delete root;
 }
-
-
-
-ASTNode* searchBranches(ASTNode* root,Type t)
-{
-    if(root->branches.size() > 0) for(auto b : root->branches)
-    {
-        if(b->getType()==t){return b;}
-        if(searchBranches(b,t)!=nullptr){return searchBranches(b,t);}
-    }
-    return nullptr;
-}
-
-void ASTTree::varAdd(std::string name, std::string type,ASTNode* attacher)
-{
-    attacher->variables[name] = new TVar(name,type);
-}
-
-
 
 enum IndentationType
 {

@@ -2,6 +2,7 @@
 #define MODULE_H
 #include "../Libraries/shared.h"
 #include "TokenLexer.h"
+#include "ASTTree.h"
 //#include "ASTTree.h"
 class Module 
 {

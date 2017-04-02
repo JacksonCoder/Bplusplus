@@ -39,8 +39,11 @@ int main(int argc,char** argv)
     //TokenSegment ts;
     TokenLexer tl;
     tl.construct(argv[2]);
-    std::cout<<tl.out.tokens[1].getValue()<<tl.out.tokens[2].getValue();
-    std::cout << "Compilation sucessful!\n";
+    for(auto t : tl.out.tokens)
+    {
+        std::cout<<t.getValue()<<std::endl;
+    }
+    //std::cout << "Compilation sucessful!\n";
     #else
     //put tests
     #endif

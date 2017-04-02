@@ -33,6 +33,9 @@ class ASTNode
         static ASTNode* assembleFuncCall(TokenSegment);
         static ASTNode* assembleVarIdent(TokenSegment);
         static ASTNode* assembleFunctionHeader(TokenSegment);
+        static ASTNode* assembleLoop(TokenSegment);
+        static ASTNode* assembleLoopBody(TokenSegment);
+        static ASTNode* assembleLoopHeader(TokenSegment);
         static bool checkIdentification(TokenSegment,Type);
         std::map<std::string,ASTNode*> data;
         std::map<std::string,ASTNode*> metaData;

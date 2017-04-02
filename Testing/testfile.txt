@@ -1,5 +1,5 @@
 import native iostream
 import native fstream
-main(const awesome:int)
-	thing:cool = 3
-    return cool
+main(const awesome:int) //this is a comment
+	thing:cool = "This is awesome \""
+	return cool
