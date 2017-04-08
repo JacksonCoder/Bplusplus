@@ -30,6 +30,7 @@ void TokenLexer::construct(std::string name)
     unsigned int levels = 0;
     for(int i = 0; i < code.length();i++)
     {
+        std::cout<<"Adding"<<std::endl;
         char c = code[i];
         if(comment && c != '\n'){continue;}
         else comment = false;
@@ -37,7 +38,7 @@ void TokenLexer::construct(std::string name)
         {
             std::string currentBuffer;
             while(isdigit(code[i])){ currentBuffer += code[i]; i++; }
-            out.push_back(NUMBER,currentBuffer,scopelevel);
+            out.push_back(NUMBER,currentBuffer,0);
             i--;
             continue;
         }
@@ -45,13 +46,8 @@ void TokenLexer::construct(std::string name)
         {
             std::string currentBuffer;
             while(alphanum(code[i])){ currentBuffer += code[i]; i++; }
-            out.push_back(TEXT,currentBuffer,scopelevel);
+            out.push_back(TEXT,currentBuffer,0);
             i--;
-            continue;
-        }
-        if(c=='\t' && (out.at(out.size()-1).getType()== TAB || out.at(out.size()-1).getType()==TERM))
-        {
-            scopelevel++;
             continue;
         }
         if(c == '\t' || c == ' ')
@@ -61,29 +57,29 @@ void TokenLexer::construct(std::string name)
         if(c=='\n')
         {
             scopelevel = 0;
-            if(!loop) out.push_back(TERM,"\n",scopelevel);
-            else out.push_back(LOOPLINE,"\n",scopelevel);
+            if(!loop) out.push_back(TERM,"\n",0);
+            else out.push_back(LOOPLINE,"\n",0);
             continue;
         }
         if(c == '(')
         {
-            out.push_back(OPAREN,"(",scopelevel);
+            out.push_back(OPAREN,"(",0);
             continue;
         }
         if(c == ')')
         {
-            out.push_back(CPAREN,")",scopelevel);
+            out.push_back(CPAREN,")",0);
             continue;
         }
 
         if(c == ':')
         {
-            out.push_back(COLON,":",scopelevel);
+            out.push_back(COLON,":",0);
             continue;
         }
         if(c == ',')
         {
-            out.push_back(COMMA,",",scopelevel);
+            out.push_back(COMMA,",",0);
             continue;
         }
         if(c == '/' && code[i-1] == '/')
@@ -98,21 +94,34 @@ void TokenLexer::construct(std::string name)
             while((code[i]!='"' || code[i-1]=='\\') && i < code.length()){currentBuffer += code[i];i++;}
             if(!(code[i]=='\"')) fail("Tokenizer Error: Unclosed quote.");
             currentBuffer += "\"";
-            out.push_back(QUOTE,currentBuffer,scopelevel);
+            out.push_back(QUOTE,currentBuffer,0);
             currentBuffer.clear();
             continue;
         }
         if(c == '=')
         {
-            out.push_back(EQUALS,"=",scopelevel);
+            out.push_back(EQUALS,"=",0);
             continue;
         }
     }
+    out.push_back(TOKENEND," ",0); //" " is abitrary
+    bool done = false;
+    unsigned int loopins;
+    while(!done) 
+    {
     for(int i = 0;i<out.size();i++) //begin lexing
     {
-        if(out.tokens[i].getType() == TEXT)
+        Token& mod = out.tokens[i];
+        if(mod.getType() == TERM)
         {
-            Token& mod = out.tokens[i];
+            if(out.tokens[i-1].getType() == TERM)
+            {
+                //blank line
+                out.tokens.erase(out.tokens.begin()+i);
+            }
+        }
+        if(mod.getType() == TEXT)
+        {
             //do typecheck
             if(mod.getValue()=="if")
             {
@@ -125,9 +134,25 @@ void TokenLexer::construct(std::string name)
             if(mod.getValue() == "end")
             {
                 mod.setType(ENDKEYWORD);
+                out.tokens.erase(out.tokens.begin()+i+1);
+                out.tokens.erase(out.tokens.begin()+i-1);
             }
         }
-        //lexing done
+        if(mod.getType() == IFKEYWORD)
+        {
+            loopins ++;
+            std::cout<<"Entering loop";
+        }
+        if(mod.getType() == ENDKEYWORD)
+        {
+            std::cout<<"Exiting loop";
+            loopins --;
+        }
+        //mod.setScope(loopins);
+        std::cout<<"i"<<std::endl;
+    }
+    done = true;
+    
     }
     //enforce(out);
 }

@@ -1,5 +1,3 @@
-import native iostream
-import native fstream
-main(const awesome:int) //this is a comment
-	thing:cool = "This is awesome \""
-	return cool
+if this
+	return this
+end

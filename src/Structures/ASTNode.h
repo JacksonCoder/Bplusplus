@@ -12,6 +12,7 @@ class ASTNode
 {
     public:
         ASTNode(Type); //<-Constructor
+        ~ASTNode();
         Type getType(){ return type;}
         void assemble();
         void assembleSubNodes(ASTTree&);
@@ -36,7 +37,10 @@ class ASTNode
         static ASTNode* assembleLoop(TokenSegment);
         static ASTNode* assembleLoopBody(TokenSegment);
         static ASTNode* assembleLoopHeader(TokenSegment);
+        static ASTNode* assembleIf(TokenSegment);
+        static ASTNode* assembleIfHeader(TokenSegment);
         static bool checkIdentification(TokenSegment,Type);
+        void print_tree();
         std::map<std::string,ASTNode*> data;
         std::map<std::string,ASTNode*> metaData;
         std::map<std::string,TVar*> variables;

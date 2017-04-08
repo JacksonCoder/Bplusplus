@@ -34,15 +34,9 @@ int main(int argc,char** argv)
 */  
     //Current stage: testing
     #ifndef TESTING
-    //Compiler c(argc,argv);
-    //c.run();
-    //TokenSegment ts;
-    TokenLexer tl;
-    tl.construct(argv[2]);
-    for(auto t : tl.out.tokens)
-    {
-        std::cout<<t.getValue()<<std::endl;
-    }
+    Compiler c(argc,argv);
+    c.run();
+    
     //std::cout << "Compilation sucessful!\n";
     #else
     //put tests

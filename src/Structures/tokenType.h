@@ -3,19 +3,20 @@
 
 enum Type
 {
+IF,
+IFHEADER,
 IMPORTN,
 RETURN,
 ARGLIST,
 FUNCTIONEND,
 FUNCTION,
 FUNCTIONHEAD,
-FUNCTIONBODY,
 CMD,
 VARDEC,
 ROOT,
 FUNCNAME,
 CMDSEQ,
-TOKENEND
+VARSET
 };
 
 enum TokenType
@@ -24,6 +25,7 @@ enum TokenType
     NUMBER,
     ELSEKEYWORD,
     ENDKEYWORD,
+    LOOPLINE,
     VAR,
     OPAREN,
     CPAREN,
@@ -32,6 +34,7 @@ enum TokenType
     EQUALS,
     TERM,
     IFKEYWORD,
-    QUOTE
+    QUOTE,
+    TOKENEND
 };
 #endif // TOKENTYPE_H_INCLUDED

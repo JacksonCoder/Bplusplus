@@ -31,6 +31,7 @@ class TokenSegment
             {
                 ret += t.getValue();
             }
+            return ret;
         }
         Token nthTokenOf(TokenType t, unsigned int i)
         {
@@ -40,8 +41,8 @@ class TokenSegment
                 if(ti.getType()==t) inc++;
                 if(inc==i) return ti;
             }
-            fail("Internal error: Token not found!");
-            return tokens[0]; //I have to put this there to avoid compiler message
+            Token failure(TOKENEND," ",0);
+            return failure; //I have to put this there to avoid a compiler message
         }
         bool tokenSequencePresent(std::initializer_list<TokenType> list)
         {
@@ -95,6 +96,17 @@ class TokenSegment
         }
         */
         void append(Token t){ tokens.push_back(t); }
+        std::vector<Token> createUntil(TokenType tt,std::vector<Token>::iterator& iter)
+        {
+            std::vector<Token> ret;
+            while(iter->getType()!=tt)
+            {
+                iter++;
+                ret.push_back(*iter);
+            }
+            ret.push_back(Token(TOKENEND," ",0));
+            return ret;
+        }
             std::vector<Token> tokens;
     protected:
     private:
