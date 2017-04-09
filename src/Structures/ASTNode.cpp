@@ -36,6 +36,7 @@ ASTNode* ASTNode::assembleTop(TokenSegment ts)
     while(line_delimiter_iter->getType()!=TOKENEND)
     {
         std::cout<<"Creating new command!"<<std::endl;
+        line.push_back(*line_delimiter_iter);
     while(line_delimiter_iter->getType()!=TERM && line_delimiter_iter->getType()!=TOKENEND) 
     { 
         line_delimiter_iter++;
@@ -47,6 +48,7 @@ ASTNode* ASTNode::assembleTop(TokenSegment ts)
             {
                 line_delimiter_iter++;
                 line.push_back(*line_delimiter_iter);
+                if(line_delimiter_iter->getType() == TOKENEND) fail("Parsing Error: no closing 'end' keyword");
             }
             line.push_back(Token(TOKENEND," ",0)); //We always tack on a TOKENEND when creating a new TokenSegment
             return_node->branches.push_back(assembleIf(TokenSegment(line)));
@@ -109,12 +111,12 @@ ASTNode* ASTNode::assembleFunctionHeader(TokenSegment ts)
 ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(CMDSEQ);
-    std::vector<Token>::iterator iter;
+    std::vector<Token>::iterator iter = ts.tokens.begin();
     while(iter->getType() != TOKENEND)
     {
         TokenSegment cmd;
-        while(iter->getType() != TERM){ iter++; cmd.push_back(iter->getType(),iter->getValue(),iter->scopenumber); }
-        cmd.push_back(TOKENEND," ",0); //REVIEW
+        while(iter->getType() != TERM && iter->getType() != TOKENEND){cmd.push_back(iter->getType(),iter->getValue(),iter->scopenumber); iter++;}
+        //cmd.push_back(TOKENEND," ",0); //REVIEW
         return_node->branches.push_back(ASTNode::assembleCmd(cmd));
     }
     return return_node;
@@ -123,10 +125,11 @@ ASTNode* ASTNode::assembleCmd(TokenSegment ts)
 {
     std::cout<<"Checking command:("<<ts.getStringValue()<<")"<<std::endl;
     ASTNode* return_node = new ASTNode(CMD);
-    if(ts.tokenSequencePresent({ENDKEYWORD})) fail("Internal error: End keyword being processed as a command!");
+    //if(ts.tokenSequencePresent({ENDKEYWORD})) fail("Internal error: End keyword being processed as a command!");
     //else if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
     //else if(ASTNode::checkIdentification(ts,VARSET)) return_node->branches.push_back(ASTNode::assembleVariableAssignment(ts));
     //else if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
+    return_node->token = ts.getStringValue();
     return return_node;
 }
 ASTNode* ASTNode::assembleIf(TokenSegment ts)
@@ -134,19 +137,13 @@ ASTNode* ASTNode::assembleIf(TokenSegment ts)
     ASTNode* return_node = new ASTNode(IF);
     std::vector<Token>::iterator iter = ts.tokens.begin();
     std::vector<Token> line;
-    line = ts.createUntil(TERM,iter);
+    line = ts.createUntil({TERM},iter,false);
     ASTNode* head = ASTNode::assembleIfHeader(line);
     line.clear();
-    //review this part, and see how I can integrate it with the reusable function
-    while(iter->getType()!=TOKENEND)
-    {
-        iter++;
-        if(iter->getType()==TOKENEND || iter->getType() == ENDKEYWORD) continue;
-        line.push_back(*iter);
-    }
+    iter++;
+    //line = ts.createUntil({TOKENEND,ENDKEYWORD},iter,false);
+    std::cout<<"NOW:"<<TokenSegment(line).getStringValue()<<std::endl;
     line.push_back(Token(TOKENEND," ",0));
-    std::cout<<TokenSegment(line).getStringValue()<<std::endl;
-    line = ts.createUntil(TOKENEND,iter);
     ASTNode* body = ASTNode::assembleCmdSeq(line);
     return_node->branches.push_back(head);
     return_node->branches.push_back(body);
@@ -157,6 +154,7 @@ ASTNode* ASTNode::assembleIfHeader(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(IFHEADER);
     std::cout<<"Assembling header!";
+    return_node->token = ts.getStringValue();
     //return_node->data["expr"] = ASTNode::assembleCmd(ts.getBetween(TEXT,TERM));
     return return_node;
 }
@@ -166,7 +164,8 @@ bool ASTNode::checkIdentification(TokenSegment ts,Type t)
     switch(t){
         case IFHEADER:
         {
-            if(ts.tokenSequencePresent({IFKEYWORD,/*BOOLEXPR*/TEXT})) 
+            ts.push_back(TOKENEND," ",0);
+            if(ts.tokenSequencePresent({IFKEYWORD,TEXT})) 
             {
                 return true;
             }
@@ -202,7 +201,7 @@ case ROOT:
         for(auto b : branches)
         {
             b->assemble();
-            this->result += b->getResult() + ',';
+            this->result += b->getResult();
         }
         break;
     }
@@ -211,7 +210,35 @@ case ROOT:
     {
         branches[0]->assemble();
         result = "if("+branches[0]->getResult()+") {";
-        break; //This is only partial
+        branches[1]->assemble();
+        result += branches[1]->getResult();
+        result += "}";
+        break;
+    }
+    case CMD: 
+    {
+        result = token;
+        break;
+    }
+    case CMDSEQ:
+    {
+        std::cout<<branches.size();
+        for(auto b : branches)
+        {
+            b->assemble();
+            result += b->getResult() + ";\n";
+        }
+        break;
+    }
+    case IFHEADER:
+    {
+        result = token;
+        break;
+    }
+    default:
+    {
+        fail("Unsupported token!");
+        break;
     }
 }
 }

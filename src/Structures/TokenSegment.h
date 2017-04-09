@@ -47,13 +47,16 @@ class TokenSegment
         bool tokenSequencePresent(std::initializer_list<TokenType> list)
         {
             std::vector<Token>::iterator iter = tokens.begin();
-            for(auto l : list)
+            if(list.size()<=tokens.size()) for(auto l : list)
             {
-                while (iter->getType() != l) {
-                iter++; if(iter->getType() == l) continue;
-                if(iter->getType()==TERM) return false;
+                while (iter->getType() != l && iter->getType()!=TOKENEND) {
+                
+                iter++;
+                if(iter->getType()==TOKENEND) return false;
+                if(iter->getType() == l) continue;
                 }
             }
+            else return false;
             return true;
         }
         TokenSegment getLine(int linenumber) 
@@ -96,15 +99,24 @@ class TokenSegment
         }
         */
         void append(Token t){ tokens.push_back(t); }
-        std::vector<Token> createUntil(TokenType tt,std::vector<Token>::iterator& iter)
+        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,std::vector<Token>::iterator& iter,bool include_tokenend)
         {
             std::vector<Token> ret;
-            while(iter->getType()!=tt)
+            bool processing = true;
+            while(processing)
             {
-                iter++;
+                for(auto tt : tokentypeil)
+                {
+                    if(iter->getType() == tt)
+                    {
+                        processing = false;
+                    }
+                }
+                if(!processing) break;
                 ret.push_back(*iter);
+                iter++;
             }
-            ret.push_back(Token(TOKENEND," ",0));
+            if(include_tokenend) ret.push_back(Token(TOKENEND," ",0));
             return ret;
         }
             std::vector<Token> tokens;
