@@ -103,13 +103,15 @@ class TokenSegment
         {
             std::vector<Token> ret;
             bool processing = true;
-            while(processing)
+            while(processing && iter->getType()!=TOKENEND)
             {
+                std::cout<<"Iter:"<<iter->getValue()<<std::endl;
                 for(auto tt : tokentypeil)
                 {
                     if(iter->getType() == tt)
                     {
                         processing = false;
+                        std::cout<<"Stopping at "<<iter->getType()<<std::endl;
                     }
                 }
                 if(!processing) break;

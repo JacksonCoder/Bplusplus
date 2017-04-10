@@ -30,7 +30,6 @@ void TokenLexer::construct(std::string name)
     unsigned int levels = 0;
     for(int i = 0; i < code.length();i++)
     {
-        std::cout<<"Adding"<<std::endl;
         char c = code[i];
         if(comment && c != '\n'){continue;}
         else comment = false;
@@ -57,8 +56,7 @@ void TokenLexer::construct(std::string name)
         if(c=='\n')
         {
             scopelevel = 0;
-            if(!loop) out.push_back(TERM,"\n",0);
-            else out.push_back(LOOPLINE,"\n",0);
+            out.push_back(TERM,"\n",0);
             continue;
         }
         if(c == '(')
@@ -106,10 +104,10 @@ void TokenLexer::construct(std::string name)
     }
     out.push_back(TOKENEND," ",0); //" " is abitrary
     bool done = false;
-    unsigned int loopins;
+    unsigned int loopins = 0;
     while(!done) 
     {
-    for(int i = 0;i<out.size();i++) //begin lexing
+    for(int a = 0; a < 2; a++) for(int i = 0;i<out.size();i++) //begin lexing
     {
         Token& mod = out.tokens[i];
         if(mod.getType() == TERM)
@@ -134,9 +132,11 @@ void TokenLexer::construct(std::string name)
             if(mod.getValue() == "end")
             {
                 mod.setType(ENDKEYWORD);
-                out.tokens.erase(out.tokens.begin()+i+1);
-                out.tokens.erase(out.tokens.begin()+i-1);
             }
+        }
+        if(mod.getType() == TERM && loopins > 0)
+        {
+            mod.setType(LOOPTERM);
         }
         if(mod.getType() == IFKEYWORD)
         {
@@ -149,7 +149,6 @@ void TokenLexer::construct(std::string name)
             loopins --;
         }
         //mod.setScope(loopins);
-        std::cout<<"i"<<std::endl;
     }
     done = true;
     
