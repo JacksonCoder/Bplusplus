@@ -1,22 +1,5 @@
 #include "ASTNode.h"
-/*
-ASTNode::ASTNode(Type t) : tokenmatches()
-{
-    type = t;
-}
 
-ASTNode::ASTNode(TokenSegment ts,ASTNode* parent) : tokenseg(ts), tokenmatches(), parent(parent)
-{
-    token = ts.getStringValue();
-    type = this->determineType(this->tokenseg);
-}
-
-ASTNode::ASTNode(TokenSegment ts) : tokenseg(token), tokenmatches()
-{
-    token = ts.getStringValue();
-    type = this->determineType(this->tokenseg);
-}
-*/
 ASTNode::ASTNode(Type t): type(t)
 {}
 void ASTNode::print_tree() //for debugging purposes
@@ -108,16 +91,19 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
 ASTNode* ASTNode::assembleCmd(TokenSegment ts)
 {
     std::cout<<"Checking command:("<<ts.getStringValue()<<")"<<std::endl;
-    ASTNode* return_node = new ASTNode(CMD);
+    ASTNode* return_node;
     if(checkIdentification(ts,IFHEADER))
     {
         return_node = ASTNode::assembleIf(ts);
     }
-    //if(ts.tokenSequencePresent({ENDKEYWORD})) fail("Internal error: End keyword being processed as a command!");
+    else if(ASTNode::checkIdentification(ts,RETURNCMD)) return_node = ASTNode::assembleReturnCmd(ts);
     //else if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
     //else if(ASTNode::checkIdentification(ts,VARSET)) return_node->branches.push_back(ASTNode::assembleVariableAssignment(ts));
     //else if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
-    return_node->token = ts.getStringValue();
+    else{
+        return_node = new ASTNode(CMD);
+        return_node->token = ts.getStringValue();
+    }
     std::cout<<"Command checked!"<<std::endl;
     return return_node;
 }
@@ -147,24 +133,50 @@ ASTNode* ASTNode::assembleIfHeader(TokenSegment ts)
     return return_node;
 }
 
+ASTNode* ASTNode::assembleReturnCmd(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(RETURNCMD);
+    unsigned int tokenlength = ts.size() - 2; //-2 for the keyword, and the TOKENEND at the end
+    if(tokenlength<=0) fail("Internal Error: 'return' statement identification flawed");
+    std::vector<Token>::iterator iter = ts.tokens.begin() + 1;
+    TokenSegment expr;
+    for(int i = 0; i < tokenlength; i ++ ) //Come to think of it, this is probably what I should have been doing the whole time
+    {
+    expr.tokens.push_back(*iter);
+    iter++;
+    }
+    return_node->data["expr"] = ASTNode::assembleCmd(expr);
+    return return_node;
+}
+
 bool ASTNode::checkIdentification(TokenSegment ts,Type t)
 {
     switch(t){
         case IFHEADER:
         {
             ts.push_back(TOKENEND," ",0);
-            if(ts.tokens[0].getType()==IFKEYWORD && ts.size() > 1) 
+            if(ts.tokens[0].getType()==IFKEYWORD && ts.size() > 1) //crude definition, but should work
             {
                 return true;
             }
             return false;
         }
-        case FUNCTIONHEAD:
+        case RETURNCMD:
         {
-            return false;   
+            ts.push_back(TOKENEND," ",0);
+            if(ts.tokens[0].getType()==RETURNKEYWORD&& ts.size() > 1)
+            {
+                std::cout<<"It's a return keyword!"<<std::endl;
+                return true;   
+            }
+            if(ts.tokens[0].getType() == RETURNKEYWORD) fail("Code error: Return statement is not finished!");
+            return false;
+        }
+        default:
+        {
+            return false;
         }
     }
-    return false;
 }
 /*
 ASTNode* ASTNode::assembleLoop(TokenSegment ts)
@@ -221,6 +233,11 @@ case ROOT:
     case IFHEADER:
     {
         result = data["expr"]->getToken();
+        break;
+    }
+    case RETURNCMD:
+    {
+        result = "return " + data["expr"]->getToken();
         break;
     }
     default:

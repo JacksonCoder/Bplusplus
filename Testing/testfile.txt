@@ -1,6 +1,3 @@
 if this
 return this
 end
-if something
-do_something
-end

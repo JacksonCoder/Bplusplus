@@ -133,6 +133,10 @@ void TokenLexer::construct(std::string name)
             {
                 mod.setType(ENDKEYWORD);
             }
+            if(mod.getValue() == "return")
+            {
+                mod.setType(RETURNKEYWORD);
+            }
         }
         if(mod.getType() == TERM && loopins > 0)
         {

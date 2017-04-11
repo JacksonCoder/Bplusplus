@@ -25,6 +25,7 @@ class ASTNode
         void setTokenMatches(std::smatch);
         static ASTNode* assembleTop(TokenSegment);
         static ASTNode* assembleCmdSeq(TokenSegment,bool);
+        static ASTNode* assembleReturnCmd(TokenSegment);
         static ASTNode* assembleCmd(TokenSegment);
         static ASTNode* assembleFunc(TokenSegment);
         static ASTNode* assembleExpr(TokenSegment);

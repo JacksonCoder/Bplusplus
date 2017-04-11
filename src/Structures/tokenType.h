@@ -6,7 +6,7 @@ enum Type
 IF,
 IFHEADER,
 IMPORTN,
-RETURN,
+RETURNCMD,
 ARGLIST,
 FUNCTIONEND,
 FUNCTION,
@@ -16,7 +16,7 @@ VARDEC,
 ROOT,
 FUNCNAME,
 CMDSEQ,
-VARSET
+VARSET,
 };
 
 enum TokenType
@@ -34,9 +34,12 @@ enum TokenType
     ELSEKEYWORD, /* < -- This is not yet implemented */
     ENDKEYWORD,
     /*
-    A end keyword is unique,because it erases the TERM's around it and is considered part of a segment on the previous line.
     The keyword is used to close a loop,function, or class.
     Can you finish the rest of these?
+    */
+    RETURNKEYWORD,
+    /*
+    The return keyword is the start of a command that prompts the program to exit once it reaches that scope and line.
     */
     LOOPTERM,
     VAR,
