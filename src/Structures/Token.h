@@ -10,6 +10,7 @@ class Token
         std::string getValue(){ return value; }
         void setType(TokenType t){ tokentype = t; }
         void setValue(std::string s){ value = s; }
+        void setScope(unsigned int s){ scopenumber = s; }
         Token();
         ~Token();
         unsigned int scopenumber;

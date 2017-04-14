@@ -26,6 +26,8 @@ class ASTNode
         static ASTNode* assembleTop(TokenSegment);
         static ASTNode* assembleCmdSeq(TokenSegment,bool);
         static ASTNode* assembleReturnCmd(TokenSegment);
+        static ASTNode* assembleFor(TokenSegment); //Work on implementation next
+        static ASTNode* assembleForHeader(TokenSegment); //same here
         static ASTNode* assembleCmd(TokenSegment);
         static ASTNode* assembleFunc(TokenSegment);
         static ASTNode* assembleExpr(TokenSegment);
@@ -41,7 +43,7 @@ class ASTNode
         static ASTNode* assembleIf(TokenSegment);
         static ASTNode* assembleIfHeader(TokenSegment);
         static bool checkIdentification(TokenSegment,Type);
-        void print_tree();
+        void print_tree(int);
         std::map<std::string,ASTNode*> data;
         std::map<std::string,ASTNode*> metaData;
         std::map<std::string,TVar*> variables;

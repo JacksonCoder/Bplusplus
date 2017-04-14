@@ -3,20 +3,22 @@
 //I thought I should put some documentation in
 enum Type
 {
-IF,
+IF, //0
+FOR,
+FORHEADER,
 IFHEADER,
 IMPORTN,
-RETURNCMD,
+RETURNCMD, //5
 ARGLIST,
 FUNCTIONEND,
 FUNCTION,
 FUNCTIONHEAD,
-CMD,
+CMD, //10
 VARDEC,
 ROOT,
 FUNCNAME,
 CMDSEQ,
-VARSET,
+VARSET, //15
 };
 
 enum TokenType
@@ -50,7 +52,6 @@ enum TokenType
     EQUALS,
     TERM,
     IFKEYWORD,
-    QUOTE,
-    TOKENEND
+    QUOTE
 };
 #endif // TOKENTYPE_H_INCLUDED

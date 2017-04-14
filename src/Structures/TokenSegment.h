@@ -41,9 +41,7 @@ class TokenSegment
                 if(ti.getType()==t) inc++;
                 if(inc==i) return ti;
             }
-            Token failure(TOKENEND," ",0);
-            return failure; //I have to put this there to avoid a compiler message
-        }
+        }/*
         bool tokenSequencePresent(std::initializer_list<TokenType> list)
         {
             std::vector<Token>::iterator iter = tokens.begin();
@@ -59,6 +57,7 @@ class TokenSegment
             else return false;
             return true;
         }
+        */
         TokenSegment getLine(int linenumber) 
         {
             std::vector<Token>::iterator iter = tokens.begin();
@@ -78,7 +77,6 @@ class TokenSegment
             return ret;
         }
         int countAmountOfTokensBetweenTermination(TokenType type, int termnumber);
-        Token find(TokenType t){std::vector<Token>::iterator iter = tokens.begin();while(iter->getType()!=t){ iter++; if(iter==tokens.end()) fail("Could not locate token"); } return *iter;}
         /*
         TokenSegment subToken(Token begin, Token end)
         {
@@ -99,17 +97,21 @@ class TokenSegment
         }
         */
         void append(Token t){ tokens.push_back(t); }
-        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,std::vector<Token>::iterator& iter,bool include_tokenend)
+        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,std::vector<Token>::iterator& iter,TokenSegment& ts)
         {
             std::vector<Token> ret;
             bool processing = true;
-            while(processing && iter->getType()!=TOKENEND)
+            //if(std::find(ts.tokens.begin(),ts.tokens.end(),*iter) == ts.tokens.end()) fail("Internal Error: parsing exclusively end of data!");
+            
+            std::cout<<"Parsing ("<<ts.getStringValue()<<")\n";
+            unsigned int current_scope = ts.tokens[1].scopenumber;
+            while(processing && iter != (ts.tokens.end()))
             {
-                std::cout<<"Iter:"<<iter->getValue()<<std::endl;
                 for(auto tt : tokentypeil)
                 {
-                    if(iter->getType() == tt)
+                    if(iter->getType() == tt && iter->scopenumber == current_scope)
                     {
+                        std::cout<<"Scope at:"<<iter->scopenumber<<std::endl;
                         processing = false;
                         std::cout<<"Stopping at "<<iter->getType()<<std::endl;
                     }
@@ -118,7 +120,6 @@ class TokenSegment
                 ret.push_back(*iter);
                 iter++;
             }
-            if(include_tokenend) ret.push_back(Token(TOKENEND," ",0));
             return ret;
         }
             std::vector<Token> tokens;

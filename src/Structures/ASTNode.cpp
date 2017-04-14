@@ -2,12 +2,16 @@
 
 ASTNode::ASTNode(Type t): type(t)
 {}
-void ASTNode::print_tree() //for debugging purposes
+void ASTNode::print_tree(int scope) //for debugging purposes
 {
+    for(int i = 0 ; i < scope;i++)
+    {
+        std::cout<<"-";
+    }
     std::cout<<"type:"<<type<<std::endl;
     for(auto b : branches)
     {
-        b->print_tree();
+        b->print_tree(scope+1);
     }
 }
 ASTNode* ASTNode::assembleTop(TokenSegment ts)
@@ -16,19 +20,8 @@ ASTNode* ASTNode::assembleTop(TokenSegment ts)
     bool loop = false;
     std::vector<Token> line;
     std::vector<Token>::iterator line_delimiter_iter = ts.tokens.begin();
-    while(line_delimiter_iter->getType()!=TOKENEND)
-    {
-        std::cout<<"Creating new command!"<<std::endl;
-    while(line_delimiter_iter->getType()!=TERM && line_delimiter_iter->getType()!=TOKENEND) 
-    { 
-        line.push_back(*line_delimiter_iter); 
-        line_delimiter_iter++;
-    }
-    return_node->branches.push_back(assembleCmd(TokenSegment(line))); 
-    line.clear();
-    line_delimiter_iter++;
-}   
-    return_node->print_tree();
+    return_node = ASTNode::assembleCmdSeq(ts,false);
+    return_node->print_tree(0);
     return return_node;
 }
 
@@ -74,23 +67,37 @@ ASTNode* ASTNode::assembleFunctionHeader(TokenSegment ts)
 
 ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
 {
+    //std::cout<<ts.tokens.end()->getValue()<<std::endl;
     std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
     ASTNode* return_node = new ASTNode(CMDSEQ);
     std::vector<Token>::iterator iter = ts.tokens.begin();
-    while(iter->getType() != TOKENEND)
+    while(iter != (ts.tokens.end()))
     {
         TokenSegment cmd;
-        if(!isLoop) while(iter->getType() != TERM && iter->getType() != TOKENEND){std::cout<<"Adding:"<<iter->getValue()<<std::endl; cmd.push_back(iter->getType(),iter->getValue(),iter->scopenumber); iter++;}
-        else while(iter->getType() != LOOPTERM && iter->getType() != TOKENEND){std::cout<<"Adding:"<<iter->getValue()<<std::endl;cmd.push_back(iter->getType(),iter->getValue(),iter->scopenumber); iter++;}
-        cmd.push_back(TOKENEND," ",0); //REVIEW
-        return_node->branches.push_back(ASTNode::assembleCmd(cmd));
-        iter++;
+        cmd = ts.createUntil({TERM},iter,ts);
+        //if unique command detected, continue
+        TokenSegment temp;
+        if(checkIdentification(cmd,IFHEADER))
+        {
+            std::cout<<"Identified as if statement.";
+            temp = ts.createUntil({ENDKEYWORD},iter,ts);
+        temp.push_back(ENDKEYWORD,"end",temp.tokens[temp.tokens.size()-1].scopenumber);
+        }
+        for(auto t : temp.tokens)
+        {
+            cmd.tokens.push_back(t);
+        }
+
+        if(cmd.size()>0) return_node->branches.push_back(ASTNode::assembleCmd(cmd));
+        else fail("What just happened?");
+        if(iter!=ts.tokens.end()) iter++;
+        //std::cout<<"Iterator is now "<<iter->getValue()<<std::endl;
     }
     return return_node;
 }
 ASTNode* ASTNode::assembleCmd(TokenSegment ts)
 {
-    std::cout<<"Checking command:("<<ts.getStringValue()<<")"<<std::endl;
+    std::cout<<"Checking command:("<<ts.getStringValue()<<")\n";
     ASTNode* return_node;
     if(checkIdentification(ts,IFHEADER))
     {
@@ -112,16 +119,17 @@ ASTNode* ASTNode::assembleIf(TokenSegment ts)
     ASTNode* return_node = new ASTNode(IF);
     std::vector<Token>::iterator iter = ts.tokens.begin();
     std::vector<Token> line;
-    line = ts.createUntil({LOOPTERM},iter,false);
+    line = ts.createUntil({TERM},iter,ts);
     ASTNode* head = ASTNode::assembleIfHeader(line);
     line.clear();
     iter++;
-    line = ts.createUntil({TOKENEND,ENDKEYWORD},iter,false);
-    line.push_back(Token(TOKENEND," ",0));
-    std::cout<<"NOW:"<<TokenSegment(line).getStringValue()<<std::endl;
+    line = ts.createUntil({ENDKEYWORD},iter,ts);
+    //line.push_back(Token(ENDKEYWORD,"end",line[line.size()-1].scopenumber));
+    std::cout<<"Assembling line:"<<TokenSegment(line).getStringValue()<<std::endl;
     ASTNode* body = ASTNode::assembleCmdSeq(TokenSegment(line),true);
     return_node->branches.push_back(head);
     return_node->branches.push_back(body);
+    std::cout<<"Closing if"<<std::endl;
     return return_node; //NEXT add header cmds and generalize looping. FUTURE: add functions
 }
 
@@ -136,7 +144,7 @@ ASTNode* ASTNode::assembleIfHeader(TokenSegment ts)
 ASTNode* ASTNode::assembleReturnCmd(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(RETURNCMD);
-    unsigned int tokenlength = ts.size() - 2; //-2 for the keyword, and the TOKENEND at the end
+    unsigned int tokenlength = ts.size() - 1; //1 for the return keyword
     if(tokenlength<=0) fail("Internal Error: 'return' statement identification flawed");
     std::vector<Token>::iterator iter = ts.tokens.begin() + 1;
     TokenSegment expr;
@@ -148,13 +156,21 @@ ASTNode* ASTNode::assembleReturnCmd(TokenSegment ts)
     return_node->data["expr"] = ASTNode::assembleCmd(expr);
     return return_node;
 }
-
+/*
+ASTNode* ASTNode::assembleFor(TokenSegment)
+{
+    //this should have an ending statement. If a ending statement can not be found, we have a parsing problem
+    bool ending_statement = false;
+    ASTNode* return_node = ASTNode(FOR);
+    TokenSeg
+    return return_node;
+}
+*/
 bool ASTNode::checkIdentification(TokenSegment ts,Type t)
 {
     switch(t){
         case IFHEADER:
         {
-            ts.push_back(TOKENEND," ",0);
             if(ts.tokens[0].getType()==IFKEYWORD && ts.size() > 1) //crude definition, but should work
             {
                 return true;
@@ -163,7 +179,6 @@ bool ASTNode::checkIdentification(TokenSegment ts,Type t)
         }
         case RETURNCMD:
         {
-            ts.push_back(TOKENEND," ",0);
             if(ts.tokens[0].getType()==RETURNKEYWORD&& ts.size() > 1)
             {
                 std::cout<<"It's a return keyword!"<<std::endl;

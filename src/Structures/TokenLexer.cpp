@@ -102,14 +102,16 @@ void TokenLexer::construct(std::string name)
             continue;
         }
     }
-    out.push_back(TOKENEND," ",0); //" " is abitrary
     bool done = false;
     unsigned int loopins = 0;
     while(!done) 
     {
-    for(int a = 0; a < 2; a++) for(int i = 0;i<out.size();i++) //begin lexing
+    for(int a = 0; a < 2; a++) 
+    {
+    for(int i = 0;i<out.size();i++) //begin lexing
     {
         Token& mod = out.tokens[i];
+        mod.setScope(loopins);
         if(mod.getType() == TERM)
         {
             if(out.tokens[i-1].getType() == TERM)
@@ -138,10 +140,6 @@ void TokenLexer::construct(std::string name)
                 mod.setType(RETURNKEYWORD);
             }
         }
-        if(mod.getType() == TERM && loopins > 0)
-        {
-            mod.setType(LOOPTERM);
-        }
         if(mod.getType() == IFKEYWORD)
         {
             loopins ++;
@@ -152,10 +150,11 @@ void TokenLexer::construct(std::string name)
             std::cout<<"Exiting loop";
             loopins --;
         }
-        //mod.setScope(loopins);
     }
     done = true;
     
+    }
+    if(loopins != 0) fail("Tokenizer Error: Non-closed scope!");
     }
     //enforce(out);
 }
