@@ -81,17 +81,14 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
         {
             std::cout<<"Identified as if statement.";
             temp = ts.createUntil({ENDKEYWORD},iter,ts);
-        temp.push_back(ENDKEYWORD,"end",temp.tokens[temp.tokens.size()-1].scopenumber);
+            iter++;
         }
         for(auto t : temp.tokens)
         {
             cmd.tokens.push_back(t);
         }
-
-        if(cmd.size()>0) return_node->branches.push_back(ASTNode::assembleCmd(cmd));
-        else fail("What just happened?");
+        return_node->branches.push_back(ASTNode::assembleCmd(cmd));
         if(iter!=ts.tokens.end()) iter++;
-        //std::cout<<"Iterator is now "<<iter->getValue()<<std::endl;
     }
     return return_node;
 }
