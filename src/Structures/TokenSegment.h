@@ -97,7 +97,7 @@ class TokenSegment
         }
         */
         void append(Token t){ tokens.push_back(t); }
-        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,std::vector<Token>::iterator& iter,TokenSegment& ts,bool processing_loop)
+        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,unsigned int& i,TokenSegment& ts,bool processing_loop)
         {
             std::vector<Token> ret;
             bool processing = true;
@@ -105,20 +105,21 @@ class TokenSegment
             
             std::cout<<"Parsing ("<<ts.getStringValue()<<")\n";
             unsigned int current_scope = ts.tokens[1].scopenumber;
-            while(processing && iter != (ts.tokens.end()))
+            while(processing && i < ts.tokens.size())
             {
                 for(auto tt : tokentypeil)
                 {
-                    if(iter->getType() == tt && (iter->scopenumber == current_scope || !processing_loop))
+                    if(ts.tokens[i].getType() == tt && (ts.tokens[i].scopenumber == current_scope || !processing_loop))
                     {
-                        std::cout<<"Scope at:"<<iter->scopenumber<<std::endl;
+                        std::cout<<"Scope at:"<<ts.tokens[i].scopenumber<<std::endl;
                         processing = false;
-                        std::cout<<"Stopping at "<<iter->getType()<<std::endl;
+                        std::cout<<"Stopping at "<<ts.tokens[i].getType()<<std::endl;
                     }
                 }
                 if(!processing) break;
-                ret.push_back(*iter);
-                iter++;
+                ret.push_back(ts.tokens[i]);
+                std::cout<<"Iterating";
+                i++;
             }
             return ret;
         }

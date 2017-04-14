@@ -19,7 +19,6 @@ ASTNode* ASTNode::assembleTop(TokenSegment ts)
     ASTNode* return_node = new ASTNode(ROOT);
     bool loop = false;
     std::vector<Token> line;
-    std::vector<Token>::iterator line_delimiter_iter = ts.tokens.begin();
     return_node = ASTNode::assembleCmdSeq(ts,false);
     return_node->print_tree(0);
     return return_node;
@@ -70,25 +69,26 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
     //std::cout<<ts.tokens.end()->getValue()<<std::endl;
     std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
     ASTNode* return_node = new ASTNode(CMDSEQ);
-    std::vector<Token>::iterator iter = ts.tokens.begin();
-    while(iter != (ts.tokens.end()))
+    unsigned int i = 0;
+    while(i < ts.tokens.size())
     {
         TokenSegment cmd;
-        cmd = ts.createUntil({TERM},iter,ts,false);
+        cmd = ts.createUntil({TERM},i,ts,false);
         //if unique command detected, continue
+        std::cout<<"Made command:"<<cmd.getStringValue()<<std::endl;
         TokenSegment temp;
         if(checkIdentification(cmd,IFHEADER))
         {
             std::cout<<"Identified as if statement.";
-            temp = ts.createUntil({ENDKEYWORD},iter,ts,true);
-            iter++;
+            temp = ts.createUntil({ENDKEYWORD},i,ts,true);
+            i++;
         }
         for(auto t : temp.tokens)
         {
             cmd.tokens.push_back(t);
         }
         return_node->branches.push_back(ASTNode::assembleCmd(cmd));
-        iter++;
+        i++;
     }
     return return_node;
 }
@@ -114,13 +114,13 @@ ASTNode* ASTNode::assembleCmd(TokenSegment ts)
 ASTNode* ASTNode::assembleIf(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(IF);
-    std::vector<Token>::iterator iter = ts.tokens.begin();
-    std::vector<Token> line;
-    line = ts.createUntil({TERM},iter,ts,false);
+    unsigned int i = 0;
+    TokenSegment line;
+    line = ts.createUntil({TERM},i,ts,false);
     ASTNode* head = ASTNode::assembleIfHeader(line);
-    line.clear();
-    iter++;
-    line = ts.createUntil({ENDKEYWORD},iter,ts,true);
+    line.tokens.clear();
+    i++;
+    line = ts.createUntil({ENDKEYWORD},i,ts,true);
     //line.push_back(Token(ENDKEYWORD,"end",line[line.size()-1].scopenumber));
     std::cout<<"Assembling line:"<<TokenSegment(line).getStringValue()<<std::endl;
     ASTNode* body = ASTNode::assembleCmdSeq(TokenSegment(line),true);
@@ -143,26 +143,35 @@ ASTNode* ASTNode::assembleReturnCmd(TokenSegment ts)
     ASTNode* return_node = new ASTNode(RETURNCMD);
     unsigned int tokenlength = ts.size() - 1; //1 for the return keyword
     if(tokenlength<=0) fail("Internal Error: 'return' statement identification flawed");
-    std::vector<Token>::iterator iter = ts.tokens.begin() + 1;
+    unsigned int i = 1;
     TokenSegment expr;
-    for(int i = 0; i < tokenlength; i ++ ) //Come to think of it, this is probably what I should have been doing the whole time
-    {
-    expr.tokens.push_back(*iter);
-    iter++;
-    }
+    expr = ts.createUntil({TERM},i,ts,false);
     return_node->data["expr"] = ASTNode::assembleCmd(expr);
     return return_node;
 }
-/*
-ASTNode* ASTNode::assembleFor(TokenSegment)
+
+ASTNode* ASTNode::assembleFor(TokenSegment ts)
 {
     //this should have an ending statement. If a ending statement can not be found, we have a parsing problem
-    bool ending_statement = false;
-    ASTNode* return_node = ASTNode(FOR);
-    TokenSeg
+    ASTNode* return_node = new ASTNode(FOR);
+    unsigned int i = 0;
+    TokenSegment header = ts.createUntil({TERM},i,ts,false);
+    ASTNode* head = ASTNode::assembleForHeader(header);
+    i++;
+    TokenSegment interior = ts.createUntil({ENDKEYWORD},i,ts,true);
+    ASTNode* body = ASTNode::assembleCmdSeq(interior,false);
+    return_node->branches.push_back(head);
+    return_node->branches.push_back(body);
+    std::cout<<"Closing for"<<std::endl;
     return return_node;
 }
-*/
+
+ASTNode* ASTNode::assembleForHeader(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(FORHEADER);
+    return_node->token = ts.getStringValue();
+    return return_node;
+}
 bool ASTNode::checkIdentification(TokenSegment ts,Type t)
 {
     switch(t){
@@ -183,6 +192,11 @@ bool ASTNode::checkIdentification(TokenSegment ts,Type t)
             }
             if(ts.tokens[0].getType() == RETURNKEYWORD) fail("Code error: Return statement is not finished!");
             return false;
+        }
+        case FORHEADER:
+        {
+            //NEXT
+            break;
         }
         default:
         {
@@ -221,7 +235,7 @@ case ROOT:
     case IF:
     {
         branches[0]->assemble();
-        result = "if("+branches[0]->getResult()+") {";
+        result = "if("+branches[0]->getResult()+") {\n";
         branches[1]->assemble();
         result += branches[1]->getResult();
         result += "}";
@@ -250,6 +264,20 @@ case ROOT:
     case RETURNCMD:
     {
         result = "return " + data["expr"]->getToken();
+        break;
+    }
+    case FORHEADER:
+    {
+        result = token;
+        break;
+    }
+    case FOR:
+    {
+        for(auto b:branches)
+        {
+            b->assemble();
+        }
+        result = branches[0]->getResult() += "{\n" + branches[1]->getResult() + "}";
         break;
     }
     default:

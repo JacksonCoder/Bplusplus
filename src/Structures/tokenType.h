@@ -43,8 +43,8 @@ enum TokenType
     /*
     The return keyword is the start of a command that prompts the program to exit once it reaches that scope and line.
     */
-    LOOPTERM,
     VAR,
+    FORKEYWORD,
     OPAREN,
     CPAREN,
     COMMA,

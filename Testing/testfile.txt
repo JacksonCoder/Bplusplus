@@ -1,13 +1,20 @@
 if this
-    return something
-    
-    
+end
+if this
+end
+if this
     if this
-        return something
-        return something_else
-    end
-    return this
-    if this
+        if this
+            return this
+            if this
+                return this
+                "this should stay as a quote"
+            end
+            return this
+        end
+        return this
     end
     return this
 end
+
+return this
