@@ -97,7 +97,7 @@ class TokenSegment
         }
         */
         void append(Token t){ tokens.push_back(t); }
-        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,std::vector<Token>::iterator& iter,TokenSegment& ts)
+        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,std::vector<Token>::iterator& iter,TokenSegment& ts,bool processing_loop)
         {
             std::vector<Token> ret;
             bool processing = true;
@@ -109,7 +109,7 @@ class TokenSegment
             {
                 for(auto tt : tokentypeil)
                 {
-                    if(iter->getType() == tt && iter->scopenumber == current_scope)
+                    if(iter->getType() == tt && (iter->scopenumber == current_scope || !processing_loop))
                     {
                         std::cout<<"Scope at:"<<iter->scopenumber<<std::endl;
                         processing = false;

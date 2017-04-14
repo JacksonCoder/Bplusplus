@@ -1,7 +1,13 @@
 if this
+    return something
+    
+    
     if this
-        if this
-            return something
-        end
+        return something
+        return something_else
     end
+    return this
+    if this
+    end
+    return this
 end

@@ -74,13 +74,13 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
     while(iter != (ts.tokens.end()))
     {
         TokenSegment cmd;
-        cmd = ts.createUntil({TERM},iter,ts);
+        cmd = ts.createUntil({TERM},iter,ts,false);
         //if unique command detected, continue
         TokenSegment temp;
         if(checkIdentification(cmd,IFHEADER))
         {
             std::cout<<"Identified as if statement.";
-            temp = ts.createUntil({ENDKEYWORD},iter,ts);
+            temp = ts.createUntil({ENDKEYWORD},iter,ts,true);
             iter++;
         }
         for(auto t : temp.tokens)
@@ -88,7 +88,7 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
             cmd.tokens.push_back(t);
         }
         return_node->branches.push_back(ASTNode::assembleCmd(cmd));
-        if(iter!=ts.tokens.end()) iter++;
+        iter++;
     }
     return return_node;
 }
@@ -116,11 +116,11 @@ ASTNode* ASTNode::assembleIf(TokenSegment ts)
     ASTNode* return_node = new ASTNode(IF);
     std::vector<Token>::iterator iter = ts.tokens.begin();
     std::vector<Token> line;
-    line = ts.createUntil({TERM},iter,ts);
+    line = ts.createUntil({TERM},iter,ts,false);
     ASTNode* head = ASTNode::assembleIfHeader(line);
     line.clear();
     iter++;
-    line = ts.createUntil({ENDKEYWORD},iter,ts);
+    line = ts.createUntil({ENDKEYWORD},iter,ts,true);
     //line.push_back(Token(ENDKEYWORD,"end",line[line.size()-1].scopenumber));
     std::cout<<"Assembling line:"<<TokenSegment(line).getStringValue()<<std::endl;
     ASTNode* body = ASTNode::assembleCmdSeq(TokenSegment(line),true);
