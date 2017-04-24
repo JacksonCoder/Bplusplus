@@ -39,8 +39,8 @@ This compiler has the job of turning B++ code into C++ code. Some error-checking
 To get this thing working, you will need to first ```git clone``` the project (you should have git installed first):
 ``` git clone https://github.com/JacksonCoder/Bplusplus```
 to compile, use the Makefile:
-'''make all'''
-to run some tests, type:
+```make all```
+To run some tests, type:
 ```make runtest```
 
 Enjoy!
