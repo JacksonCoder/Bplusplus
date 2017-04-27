@@ -101,6 +101,31 @@ void TokenLexer::construct(std::string name)
             out.push_back(EQUALS,"=",0);
             continue;
         }
+        if(c == '@')
+        {
+            out.push_back(AT,"@",0);
+            continue;
+        }
+        if(c == '+')
+        {
+            out.push_back(ADD,"+", 0); //NEXT
+            continue;
+        }
+        if(c == '-')
+        {
+            out.push_back(SUBTRACT,"-",0);
+            continue;
+        }
+        if(c == '*')
+        {
+            out.push_back(POINTER,"*",0);
+            continue;
+        }
+        if(c == '/')
+        {
+            out.push_back(DIVIDE,"/",0);
+            continue;
+        }
     }
     bool done = false;
     unsigned int loopins = 0;
@@ -119,6 +144,10 @@ void TokenLexer::construct(std::string name)
                 //blank line
                 out.tokens.erase(out.tokens.begin()+i);
             }
+        }
+        if(mod.getType() == POINTER)
+        {
+            //if(out.tokens[i-1] != TYPE) mod.setType(MULTIPLY)
         }
         if(mod.getType() == TEXT)
         {
@@ -139,8 +168,12 @@ void TokenLexer::construct(std::string name)
             {
                 mod.setType(RETURNKEYWORD);
             }
+            if(mod.getValue() == "for")
+            {
+                mod.setType(FORKEYWORD);
+            }
         }
-        if(mod.getType() == IFKEYWORD)
+        if(mod.getType() == IFKEYWORD || mod.getType() == FORKEYWORD)
         {
             loopins ++;
             std::cout<<"Entering loop";

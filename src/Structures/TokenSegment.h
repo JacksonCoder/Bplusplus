@@ -104,7 +104,7 @@ class TokenSegment
             //if(std::find(ts.tokens.begin(),ts.tokens.end(),*iter) == ts.tokens.end()) fail("Internal Error: parsing exclusively end of data!");
             
             std::cout<<"Parsing ("<<ts.getStringValue()<<")\n";
-            unsigned int current_scope = ts.tokens[1].scopenumber;
+            unsigned int current_scope = ts.tokens[i].scopenumber;
             while(processing && i < ts.tokens.size())
             {
                 for(auto tt : tokentypeil)

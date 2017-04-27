@@ -19,6 +19,8 @@ ROOT,
 FUNCNAME,
 CMDSEQ,
 VARSET, //15
+VARINIT,
+EXPR
 };
 
 enum TokenType
@@ -52,6 +54,13 @@ enum TokenType
     EQUALS,
     TERM,
     IFKEYWORD,
-    QUOTE
+    QUOTE,
+    AT,
+    ADD,
+    SUBTRACT,
+    DIVIDE,
+    MULTIPLY,
+    MODULO,
+    POINTER
 };
 #endif // TOKENTYPE_H_INCLUDED

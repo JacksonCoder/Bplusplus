@@ -42,11 +42,11 @@ class ASTNode
         static ASTNode* assembleLoopHeader(TokenSegment);
         static ASTNode* assembleIf(TokenSegment);
         static ASTNode* assembleIfHeader(TokenSegment);
+        static ASTNode* assembleVarInit(TokenSegment);
         static bool checkIdentification(TokenSegment,Type);
         void print_tree(int);
         std::map<std::string,ASTNode*> data;
-        std::map<std::string,ASTNode*> metaData;
-        std::map<std::string,TVar*> variables;
+        std::string meta;
     protected:
     private:
 

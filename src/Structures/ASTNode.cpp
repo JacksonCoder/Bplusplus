@@ -79,7 +79,13 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
         TokenSegment temp;
         if(checkIdentification(cmd,IFHEADER))
         {
-            std::cout<<"Identified as if statement.";
+            std::cout<<"Identified as if statement."<<std::endl;
+            temp = ts.createUntil({ENDKEYWORD},i,ts,true);
+            i++;
+        }
+        else if(checkIdentification(cmd,FORHEADER))
+        {
+            std::cout<<"Identified as for statement."<<std::endl;
             temp = ts.createUntil({ENDKEYWORD},i,ts,true);
             i++;
         }
@@ -89,6 +95,7 @@ ASTNode* ASTNode::assembleCmdSeq(TokenSegment ts,bool isLoop)
         }
         return_node->branches.push_back(ASTNode::assembleCmd(cmd));
         i++;
+
     }
     return return_node;
 }
@@ -100,6 +107,10 @@ ASTNode* ASTNode::assembleCmd(TokenSegment ts)
     {
         return_node = ASTNode::assembleIf(ts);
     }
+    else if(checkIdentification(ts,FORHEADER))
+    {
+        return_node = ASTNode::assembleFor(ts);
+    }
     else if(ASTNode::checkIdentification(ts,RETURNCMD)) return_node = ASTNode::assembleReturnCmd(ts);
     //else if(ASTNode::checkIdentification(ts,VARDEC)) return_node->branches.push_back(ASTNode::assembleVariableDeclaration(ts));
     //else if(ASTNode::checkIdentification(ts,VARSET)) return_node->branches.push_back(ASTNode::assembleVariableAssignment(ts));
@@ -109,6 +120,16 @@ ASTNode* ASTNode::assembleCmd(TokenSegment ts)
         return_node->token = ts.getStringValue();
     }
     std::cout<<"Command checked!"<<std::endl;
+    return return_node;
+}
+ASTNode* ASTNode::assembleVarInit(TokenSegment ts)
+{
+    ASTNode* return_node = new ASTNode(VARINIT);
+    return_node->data["name"] = new ASTNode(CMD);
+    return_node->data["name"]->token = ts.tokens[0].getValue();
+    std::cout<<"CHECKING:"<<return_node->data["name"]->token<<std::endl;
+    return_node->data["type"] = new ASTNode(CMD);
+    return_node->data["type"]->token = ts.tokens[2].getValue();
     return return_node;
 }
 ASTNode* ASTNode::assembleIf(TokenSegment ts)
@@ -130,11 +151,59 @@ ASTNode* ASTNode::assembleIf(TokenSegment ts)
     return return_node; //NEXT add header cmds and generalize looping. FUTURE: add functions
 }
 
+ASTNode* ASTNode::assembleExpr(TokenSegment ts)
+{
+    std::cout<<"Starting parsing"<<std::endl;
+    ASTNode* return_node = new ASTNode(EXPR);
+    //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
+    
+    if(ts.tokens.size() > 1)
+    {
+    TokenSegment left_expr;
+    unsigned int paren_in = 0,i=0;
+    while((ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != DIVIDE) || paren_in != 0)
+    {
+        left_expr.tokens.push_back(ts.tokens[i]);
+        if(ts.tokens[i].getType() == OPAREN){ paren_in++; std::cout<<"+"<<std::endl; }
+        if(ts.tokens[i].getType() == CPAREN){ paren_in--; std::cout<<"-"<<std::endl; }
+        std::cout<<"Paren_in"<<paren_in<<std::endl;
+        i++;
+    }
+    if(ts.tokens[i].getType() == ADD) return_node->meta = "ADD";
+    else if(ts.tokens[i].getType() == SUBTRACT) return_node->meta = "ADD";
+    else if(ts.tokens[i].getType() == DIVIDE) return_node->meta = "ADD";
+    i++;
+    std::cout<<"Left Expression Parsed. Result:"<<left_expr.getStringValue()<<std::endl;
+    while(left_expr.tokens[0].getType() == OPAREN && left_expr.tokens[left_expr.tokens.size()-1].getType() == CPAREN)
+    {
+        left_expr.tokens.erase(left_expr.tokens.begin());
+        left_expr.tokens.erase(left_expr.tokens.end()-1);
+        std::cout<<"erasing"<<std::endl;
+    }
+    TokenSegment right_expr;
+    while(i < ts.tokens.size())
+        {
+            right_expr.tokens.push_back(ts.tokens[i]);
+            i++;
+        }
+    std::cout<<"Right Expression Parsed. Result:"<<right_expr.getStringValue()<<std::endl;
+    //next parse left_expr and right_expr as expr
+    return_node->data["left"] = ASTNode::assembleExpr(left_expr);
+    return_node->data["right"] = ASTNode::assembleExpr(right_expr);
+    }
+    else
+    {
+        return_node->token = ts.getStringValue();
+    }
+    return return_node;
+}
 ASTNode* ASTNode::assembleIfHeader(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(IFHEADER);
     std::cout<<"Assembling header!";
-    return_node->data["expr"] = ASTNode::assembleCmd(ts.nthTokenOf(TEXT,1)); //CHANGE
+    unsigned int i = 1;
+    TokenSegment header = ts.createUntil({TERM},i,ts,false);
+    return_node->data["expr"] = ASTNode::assembleExpr(header); //CHANGE
     return return_node;
 }
 
@@ -169,7 +238,23 @@ ASTNode* ASTNode::assembleFor(TokenSegment ts)
 ASTNode* ASTNode::assembleForHeader(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(FORHEADER);
-    return_node->token = ts.getStringValue();
+    unsigned int i = 4;
+    if(ts.tokens[i].getType()==AT)
+    {
+        //range
+        i-=3;
+        TokenSegment variable;
+        for(int a = 0; a < 3; a++)
+        {
+            variable.tokens.push_back(ts.tokens[a+i]);
+        }
+        return_node->data["var"] = ASTNode::assembleVarInit(variable);
+        i += 4;
+        return_node->data["range"] = ASTNode::assembleCmd(ts.tokens[i]);
+    }
+    else {
+        fail("Parsing error: 'For' statement contained a unexpected token");
+    }
     return return_node;
 }
 bool ASTNode::checkIdentification(TokenSegment ts,Type t)
@@ -195,7 +280,13 @@ bool ASTNode::checkIdentification(TokenSegment ts,Type t)
         }
         case FORHEADER:
         {
-            //NEXT
+            if(ts.tokens[0].getType()==FORKEYWORD && ts.size() > 3)
+            {
+                std::cout<<"It's a 'for' header!"<<std::endl;
+                return true;
+            }
+            if(ts.tokens[0].getType() == FORKEYWORD && ts.size() <= 3) fail("Code error: For statement is not finished!");
+            return false;
             break;
         }
         default:
@@ -256,9 +347,24 @@ case ROOT:
         }
         break;
     }
+    case EXPR:
+    {
+        if(meta!="")
+        {
+        result = "(";
+        data["left"]->assemble(); data["right"]->assemble();
+        if(meta == "ADD") result += data["left"]->getResult() + "+" + data["right"]->getResult();
+        result += ")";
+        }
+        else{
+            result = token;
+        }
+        break;
+    }
     case IFHEADER:
     {
-        result = data["expr"]->getToken();
+        data["expr"]->assemble();
+        result = data["expr"]->getResult();
         break;
     }
     case RETURNCMD:
@@ -268,7 +374,9 @@ case ROOT:
     }
     case FORHEADER:
     {
-        result = token;
+        data["var"]->assemble();
+        data["range"]->assemble();
+        result = "for(" + data["var"]->getResult() + "= 0;" + data["var"]->data["name"]->getToken() + " < " + data["range"]->getResult() + ";" + data["var"]->data["name"]->getToken() + "++)";
         break;
     }
     case FOR:
@@ -278,6 +386,11 @@ case ROOT:
             b->assemble();
         }
         result = branches[0]->getResult() += "{\n" + branches[1]->getResult() + "}";
+        break;
+    }
+    case VARINIT:
+    {
+        result = data["type"]->getToken() + " " + data["name"]->getToken();
         break;
     }
     default:
