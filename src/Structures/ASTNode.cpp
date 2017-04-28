@@ -156,45 +156,60 @@ ASTNode* ASTNode::assembleExpr(TokenSegment ts)
     std::cout<<"Starting parsing"<<std::endl;
     ASTNode* return_node = new ASTNode(EXPR);
     //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
-    
-    if(ts.tokens.size() > 1)
-    {
+    unsigned int a = 0;
     TokenSegment left_expr;
     unsigned int paren_in = 0,i=0;
-    while((ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != DIVIDE) || paren_in != 0)
+    bool paren_wrap = false;
+    while(i < ts.size())
+    {
+        if(((ts.tokens[i].getType() == ADD && ts.tokens[i].getType() == SUBTRACT && ts.tokens[i].getType() == DIVIDE) && paren_in == 0))
+        {
+            paren_wrap = true;   
+        }
+        if(ts.tokens[i].getType() == OPAREN){ paren_in++; std::cout<<"+"<<std::endl; }
+        if(ts.tokens[i].getType() == CPAREN){ paren_in--; std::cout<<"-"<<std::endl; }
+        i++;
+    }
+    if(paren_wrap) //then we have to unwrap some parentheses
+    {
+    while(left_expr.tokens[0].getType() == OPAREN && left_expr.tokens[left_expr.tokens.size()-1].getType() == CPAREN)
+    {
+        left_expr.tokens.erase(ts.tokens.begin());
+        left_expr.tokens.erase(ts.tokens.end()-1);
+        std::cout<<"erasing"<<std::endl;
+    }
+    }
+    //then calculate
+    i = 0;
+    while(((ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != DIVIDE) || paren_in != 0) && i < ts.size()) 
     {
         left_expr.tokens.push_back(ts.tokens[i]);
         if(ts.tokens[i].getType() == OPAREN){ paren_in++; std::cout<<"+"<<std::endl; }
         if(ts.tokens[i].getType() == CPAREN){ paren_in--; std::cout<<"-"<<std::endl; }
-        std::cout<<"Paren_in"<<paren_in<<std::endl;
         i++;
+    }
+    if(!(i < ts.size())) 
+    {
+        return_node->token = ts.getStringValue();
+        std::cout<<"breaking"<<std::endl;
+        return return_node;
     }
     if(ts.tokens[i].getType() == ADD) return_node->meta = "ADD";
     else if(ts.tokens[i].getType() == SUBTRACT) return_node->meta = "ADD";
     else if(ts.tokens[i].getType() == DIVIDE) return_node->meta = "ADD";
     i++;
     std::cout<<"Left Expression Parsed. Result:"<<left_expr.getStringValue()<<std::endl;
-    while(left_expr.tokens[0].getType() == OPAREN && left_expr.tokens[left_expr.tokens.size()-1].getType() == CPAREN)
-    {
-        left_expr.tokens.erase(left_expr.tokens.begin());
-        left_expr.tokens.erase(left_expr.tokens.end()-1);
-        std::cout<<"erasing"<<std::endl;
-    }
+
     TokenSegment right_expr;
     while(i < ts.tokens.size())
         {
             right_expr.tokens.push_back(ts.tokens[i]);
             i++;
         }
-    std::cout<<"Right Expression Parsed. Result:"<<right_expr.getStringValue()<<std::endl;
-    //next parse left_expr and right_expr as expr
+            std::cout<<"Right Expression Parsed. Result:"<<right_expr.getStringValue()<<std::endl;
     return_node->data["left"] = ASTNode::assembleExpr(left_expr);
     return_node->data["right"] = ASTNode::assembleExpr(right_expr);
-    }
-    else
-    {
-        return_node->token = ts.getStringValue();
-    }
+
     return return_node;
 }
 ASTNode* ASTNode::assembleIfHeader(TokenSegment ts)
@@ -313,7 +328,7 @@ void ASTNode::assemble()
 {
     switch(type) {
 
-case ROOT:
+    case ROOT:
     {
         for(auto b : branches)
         {
