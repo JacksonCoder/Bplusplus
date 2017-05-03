@@ -150,7 +150,20 @@ ASTNode* ASTNode::assembleIf(TokenSegment ts)
     std::cout<<"Closing if"<<std::endl;
     return return_node; //NEXT add header cmds and generalize looping. FUTURE: add functions
 }
-
+int getOperatorPriority(TokenType operatortt) //local function
+{
+    switch(operatortt)
+    {
+        case ADD:
+        case SUBTRACT:
+            return 1;
+        break;
+        case DIVIDE:
+            return 2;
+        break;
+    }
+    return 999;
+}
 ASTNode* ASTNode::assembleExpr(TokenSegment ts)
 {
     std::cout<<"Starting parsing"<<std::endl;
@@ -172,31 +185,45 @@ ASTNode* ASTNode::assembleExpr(TokenSegment ts)
     }
     if(paren_wrap) //then we have to unwrap some parentheses
     {
-    while(left_expr.tokens[0].getType() == OPAREN && left_expr.tokens[left_expr.tokens.size()-1].getType() == CPAREN)
-    {
-        left_expr.tokens.erase(ts.tokens.begin());
-        left_expr.tokens.erase(ts.tokens.end()-1);
-        std::cout<<"erasing"<<std::endl;
-    }
+        while(left_expr.tokens[0].getType() == OPAREN && left_expr.tokens[left_expr.tokens.size()-1].getType() == CPAREN)
+        {
+            left_expr.tokens.erase(ts.tokens.begin());
+            left_expr.tokens.erase(ts.tokens.end()-1);
+            std::cout<<"erasing"<<std::endl;
+        }
     }
     //then calculate
     i = 0;
-    while(((ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != DIVIDE) || paren_in != 0) && i < ts.size()) 
+    unsigned int least_prominent_operator_iterator = 0;
+    while(i < ts.size()) 
     {
-        left_expr.tokens.push_back(ts.tokens[i]);
-        if(ts.tokens[i].getType() == OPAREN){ paren_in++; std::cout<<"+"<<std::endl; }
-        if(ts.tokens[i].getType() == CPAREN){ paren_in--; std::cout<<"-"<<std::endl; }
+        //get the prominent operator
+        std::cout<<"operator priority:"<<getOperatorPriority(ts.tokens[i].getType());
+        if((getOperatorPriority(ts.tokens[i].getType()) < getOperatorPriority(ts.tokens[least_prominent_operator_iterator].getType())) && paren_in == 0)
+        {
+            std::cout<<"Naming least prominent operator!"<<std::endl;
+            least_prominent_operator_iterator = i;
+        }
+        if(ts.tokens[i].getType() == OPAREN) paren_in++;
+        if(ts.tokens[i].getType() == CPAREN) paren_in--;
         i++;
     }
-    if(!(i < ts.size())) 
+    if(least_prominent_operator_iterator == 0) //weak 
     {
         return_node->token = ts.getStringValue();
         std::cout<<"breaking"<<std::endl;
         return return_node;
     }
+    i = 0;
+    while(i < least_prominent_operator_iterator) 
+    {
+        left_expr.tokens.push_back(ts.tokens[i]);
+        i++;
+    }
+    //TODO: Maybe move logical component to another location?
     if(ts.tokens[i].getType() == ADD) return_node->meta = "ADD";
-    else if(ts.tokens[i].getType() == SUBTRACT) return_node->meta = "ADD";
-    else if(ts.tokens[i].getType() == DIVIDE) return_node->meta = "ADD";
+    else if(ts.tokens[i].getType() == SUBTRACT) return_node->meta = "SUBTRACT";
+    else if(ts.tokens[i].getType() == DIVIDE) return_node->meta = "DIVIDE";
     i++;
     std::cout<<"Left Expression Parsed. Result:"<<left_expr.getStringValue()<<std::endl;
 
@@ -364,11 +391,13 @@ void ASTNode::assemble()
     }
     case EXPR:
     {
-        if(meta!="")
+        if(meta=="ADD" || meta=="SUBTRACT" || meta=="DIVIDE")
         {
         result = "(";
         data["left"]->assemble(); data["right"]->assemble();
-        if(meta == "ADD") result += data["left"]->getResult() + "+" + data["right"]->getResult();
+        result += data["left"]->getResult();
+        result += meta=="ADD"?"+" :  meta=="SUBTRACT" ?"-" : "/";
+        result += data["right"]->getResult();
         result += ")";
         }
         else{

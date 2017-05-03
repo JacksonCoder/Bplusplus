@@ -1,3 +1,2 @@
-if (5-2)+3+(5+thing())
-    return some_variable
+if 5+3/2+3
 end
