@@ -126,6 +126,11 @@ void TokenLexer::construct(std::string name)
             out.push_back(DIVIDE,"/",0);
             continue;
         }
+        if(c == '%')
+        {
+            out.push_back(MODULO,"%",0);
+            continue;
+        }
     }
     bool done = false;
     unsigned int loopins = 0;

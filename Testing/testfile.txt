@@ -1,2 +1,12 @@
-if 5+3/2+3
+if 5/3%2
+    return something
+end
+if some_variable
+    if some_variable
+        if some_variable
+            for this:int @ 5
+                return something
+            end
+        end
+    end
 end
