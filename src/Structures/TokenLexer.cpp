@@ -80,7 +80,7 @@ void TokenLexer::construct(std::string name)
             out.push_back(COMMA,",",0);
             continue;
         }
-        if(c == '/' && code[i-1] == '/')
+        if(c == '/' && code[i+1] == '/')
         {
             comment = true;
             continue;
@@ -96,11 +96,23 @@ void TokenLexer::construct(std::string name)
             currentBuffer.clear();
             continue;
         }
+        if(c == '=' && code[i+1] == '=')
+        {
+            out.push_back(EQUALS,"==",0);
+            continue;
+        }
+        if(c == '!' && code[i+1] == '=')
+        {
+            out.push_back(NOTEQUALS,"!=",0);
+            continue;
+        }
+        /*
         if(c == '=')
         {
             out.push_back(EQUALS,"=",0);
             continue;
         }
+        */
         if(c == '@')
         {
             out.push_back(AT,"@",0);

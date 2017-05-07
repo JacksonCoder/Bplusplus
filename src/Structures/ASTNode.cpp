@@ -161,6 +161,9 @@ int getOperatorPriority(TokenType operatortt) //local function
             return 2;
         case MODULO:
             return 3;
+        case EQUALS:
+        case NOTEQUALS:
+            return 20;
     }
     return 999;
 }
@@ -225,6 +228,8 @@ ASTNode* ASTNode::assembleExpr(TokenSegment ts)
     else if(ts.tokens[i].getType() == SUBTRACT) return_node->meta = "SUBTRACT";
     else if(ts.tokens[i].getType() == DIVIDE) return_node->meta = "DIVIDE";
     else if(ts.tokens[i].getType() == MODULO) return_node->meta = "MODULO";
+    else if(ts.tokens[i].getType() == EQUALS) return_node->meta = "EQUALS";
+    else if(ts.tokens[i].getType() == NOTEQUALS) return_node->meta = "NOTEQUALS";
     i++;
     std::cout<<"Left Expression Parsed. Result:"<<left_expr.getStringValue()<<std::endl;
 
@@ -392,15 +397,12 @@ void ASTNode::assemble()
     }
     case EXPR:
     {
-        if(meta=="ADD" || meta=="SUBTRACT" || meta=="DIVIDE" || meta=="MODULO")
+        if(meta == "ADD" || meta == "SUBTRACT" || meta == "DIVIDE" || meta == "MODULO" || meta == "EQUALS" || meta == "NOTEQUALS")
         {
-        result = "(";
         data["left"]->assemble(); data["right"]->assemble();
         result += data["left"]->getResult();
-        std::cout<<"META:"<<meta<<std::endl;
-        result += meta=="ADD"?"+" :  meta=="SUBTRACT" ?"-" : meta=="MODULO" ? "%" : "/";
+        result += meta=="ADD"?"+" :  meta=="SUBTRACT" ?"-" : meta=="MODULO" ? "%" : meta=="EQUALS"? "==" : meta=="NOTEQUALS" ? "!=" : "/";
         result += data["right"]->getResult();
-        result += ")";
         }
         else{
             result = token;

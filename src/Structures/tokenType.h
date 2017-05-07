@@ -51,7 +51,6 @@ enum TokenType
     CPAREN,
     COMMA,
     COLON,
-    EQUALS,
     TERM,
     IFKEYWORD,
     QUOTE,
@@ -61,6 +60,8 @@ enum TokenType
     DIVIDE,
     MULTIPLY,
     MODULO,
-    POINTER
+    POINTER,
+    EQUALS,
+    NOTEQUALS
 };
 #endif // TOKENTYPE_H_INCLUDED
