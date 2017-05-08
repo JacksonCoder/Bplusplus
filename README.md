@@ -29,6 +29,15 @@ main(const int argc,pointer pointer char argv)
     out(sqrt(results[i))
   return 0
 ```
+Features of B++:
+- Built-in asyncronous function support
+- Memory-safe
+- Cleaner syntax
+- Inline Python scripting
+- Use native C++ functions and classes
+- Type inference
+- Minimal overhead
+
 This compiler has the job of turning B++ code into C++ code. Some error-checking is handled, but not all of it. We leave it up to the C++ compiler's much more robust error-checker to find things like template errors and such.
 
 To get this thing working, you will need to first ```git clone``` the project (you should have git installed first):
