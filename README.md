@@ -20,19 +20,14 @@ int main(const int argc,char** argv){
 ```
 That same thing in B++ would look much simpler, and is easier to read:
 ```cpp
-import native local math.hpp,native local vector, sdk
-extern std/vector
-results:std/vector<int>
-main(const argc:int,argv:char**)
-  stream "Input 12 numbers\n" to std/cout
-  repeat 12 iterator:int
-    stream vector[iterator] from std/cin
-  end
-  repeat 12 iterator:int
-    stream sqrt(vector[iterator]),std/endl to std/cout
-  end
-  <- 0
-end
+Container{int}results
+main(const int argc,pointer pointer char argv)
+  out("Input 12 numbers\n")
+  for int i < 12
+    in(results[i])
+  for int i < 12
+    out(sqrt(results[i))
+  return 0
 ```
 This compiler has the job of turning B++ code into C++ code. Some error-checking is handled, but not all of it. We leave it up to the C++ compiler's much more robust error-checker to find things like template errors and such.
 
