@@ -4,6 +4,7 @@
 #include "File.h"
 #include "ASTTree.h"
 #include "TokenSegment.h"
+#include "../src/Libraries/shared.h"
 class ASTTree;
 class ASTNode
 {

@@ -1,4 +1,4 @@
-#include "ASTNode.h"
+#include "../../Include/ASTNode.h"
 
 ASTNode::ASTNode(Type t): type(t)
 {}

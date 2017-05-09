@@ -3,7 +3,7 @@
 #include "../src/Libraries/shared.h"
 #include "TokenLexer.h"
 #include "ASTTree.h"
-//#include "ASTTree.h"
+class ASTTree;
 class Module 
 {
     public:

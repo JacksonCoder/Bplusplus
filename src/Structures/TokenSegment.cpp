@@ -1,4 +1,4 @@
-#include "TokenSegment.h"
+#include "../../Include/TokenSegment.h"
 
 TokenSegment::TokenSegment()
 {

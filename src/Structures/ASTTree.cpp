@@ -1,4 +1,4 @@
-#include "ASTTree.h"
+#include "../../Include/ASTTree.h"
 
 ASTTree::ASTTree()
 {
