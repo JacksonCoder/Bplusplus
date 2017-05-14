@@ -13,6 +13,6 @@ void Module::build()
                 std::cout<<test.getType();
         }
         tree.build(lex.getOutput());
-        std::cout<<tree.getRoot()->getResult()<<std::endl;
+        //std::cout<<tree.getRoot()->getResult()<<std::endl;
         //then settle dependencies
 }

@@ -5,54 +5,52 @@
 #include "ASTTree.h"
 #include "TokenSegment.h"
 #include "../src/Libraries/shared.h"
+#include "parsing.h"
 class ASTTree;
+class NodeData {
+    public:
+        std::map<std::string,std::string> data;
+};
+class Scope {
+    public:
+        bool inFunction;
+        bool inClass;
+        unsigned int loopsIn;
+};
 class ASTNode
 {
     public:
         ASTNode(Type); //<-Constructor
         ~ASTNode();
-        Type getType(){ return type;}
-        void assemble();
-        void assembleSubNodes(ASTTree&);
-        Type determineType(TokenSegment);
-        std::string getToken(){ return token;}
-        std::string getResult(){ return result;}
-        void setToken(std::string t){token=t;}
-        std::vector<ASTNode*> branches;
-        ASTNode* parent;
-        void setTokenMatches(std::smatch);
-        static ASTNode* assembleTop(TokenSegment);
-        static ASTNode* assembleCmdSeq(TokenSegment,bool);
-        static ASTNode* assembleReturnCmd(TokenSegment);
-        static ASTNode* assembleFor(TokenSegment); //Work on implementation next
-        static ASTNode* assembleForHeader(TokenSegment); //same here
-        static ASTNode* assembleCmd(TokenSegment);
-        static ASTNode* assembleFunc(TokenSegment);
-        static ASTNode* assembleExpr(TokenSegment);
-        static ASTNode* assembleVarDec(TokenSegment);
-        static ASTNode* assembleKeyword(TokenSegment);
-        static ASTNode* assembleListWithDelimiter(TokenSegment);
-        static ASTNode* assembleFuncCall(TokenSegment);
-        static ASTNode* assembleVarIdent(TokenSegment);
-        static ASTNode* assembleFunctionHeader(TokenSegment);
-        static ASTNode* assembleLoop(TokenSegment);
-        static ASTNode* assembleLoopBody(TokenSegment);
-        static ASTNode* assembleLoopHeader(TokenSegment);
-        static ASTNode* assembleIf(TokenSegment);
-        static ASTNode* assembleIfHeader(TokenSegment);
-        static ASTNode* assembleVarInit(TokenSegment);
-        static bool checkIdentification(TokenSegment,Type);
-        void print_tree(int);
-        std::map<std::string,ASTNode*> data;
-        std::string meta;
-    protected:
-    private:
-
-        //implement type system ( and add vectors )
-
         Type type;
-        std::string token;
-        std::string result;
+        Scope scope;
+        unsigned int line;
+        TokenSegment component;
+        std::string str_component;
+        std::string finished_result;
+        NodeData node_data;
+        std::vector<ASTNode*> branches;
+        virtual void assemble();
 };
-//#include "ASTTree.h"
+class VarNode : public ASTNode {
+    public:
+        VarNode(): ASTNode(VARINIT) {}
+        virtual void assemble();
+};
+class ExprNode : ASTNode {
+    public:
+        virtual void assemble();
+};
+class IfNode : ASTNode {
+    public:
+        virtual void assemble();
+};
+class CmdSeqNode : ASTNode {
+    public:
+        virtual void assemble();
+};
+class CmdNode : ASTNode {
+    public:
+        virtual void assemble();
+};
 #endif // ASTNode_H
