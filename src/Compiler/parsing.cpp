@@ -3,59 +3,16 @@
 
 ASTNode* assembleTop(TokenSegment ts)
 {
-    ASTNode* return_node = new ASTNode(ROOT);
-    bool loop = false;
-    std::vector<Token> line;
-    //return_node = assembleCmdSeq(ts,false);
-    return_node->branches.push_back(assembleVarInit(ts));
+    ASTNode* return_node = new ASTNode();
+    return_node = assembleCmdSeq(ts,false);
     return return_node;
 }
-/*
-ASTNode* assembleFunc(TokenSegment ts)
-{
-    ASTNode* return_node = new ASTNode(FUNCTION);
-    //assemble the top first
-    std::vector<Token> top;
-    std::vector<Token> body;
-    std::vector<Token>::iterator delimiter_iter = ts.tokens.begin();
-    while(delimiter_iter->getType()!=TERM)
-    {
-        delimiter_iter++;
-        top.push_back(*delimiter_iter);
-    }
-    return_node->branches.push_back(assembleFunctionHeader(TokenSegment(top)));
-    while(delimiter_iter!=ts.tokens.end()) //<- does it compare classes if you have a iterator?
-    {
-        delimiter_iter++;
-        body.push_back(*delimiter_iter);
-    }
-    return_node->branches.push_back(assembleCmdSeq(body,false));
-    //Notes:
-    // Make sure that all low-level data is brought to the root for the final process
-    return return_node;
-}
-ASTNode* assembleLoop(TokenSegment ts)
-{
-    ASTNode* return_node = new ASTNode(IF);
-    return return_node;
-}
-ASTNode* assembleFunctionHeader(TokenSegment ts)
-{
-    ASTNode* return_node = new ASTNode(FUNCTIONHEAD);
-    /*
-        //both args and type
-        return_node->data["name"] = new ASTNode(FUNCNAME); //<- No further work needs to be done: it is just a pure string
-        return_node->data["name"]->setToken(ts.nthTokenOf(NAME,1).getValue()); //<- put this line and previous into other function?
-        //return_node->data["args"] = assembleVarList(ts.getBetween(OPAREN,CPAREN)); //TokenSegment should handle this
-    
-    return return_node;
-}
-/*
+
+
 ASTNode* assembleCmdSeq(TokenSegment ts,bool isLoop)
 {
-    //std::cout<<ts.tokens.end()->getValue()<<std::endl;
     std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
-    ASTNode* return_node = new ASTNode(CMDSEQ);
+    ASTNode* return_node = new CmdSeqNode();
     unsigned int i = 0;
     while(i < ts.tokens.size())
     {
@@ -64,13 +21,13 @@ ASTNode* assembleCmdSeq(TokenSegment ts,bool isLoop)
         //if unique command detected, continue
         std::cout<<"Made command:"<<cmd.getStringValue()<<std::endl;
         TokenSegment temp;
-        if(checkIdentification(cmd,IFHEADER))
+        if(IfNode::is(cmd))
         {
             std::cout<<"Identified as if statement."<<std::endl;
             temp = ts.createUntil({ENDKEYWORD},i,ts,true);
             i++;
         }
-        else if(checkIdentification(cmd,FORHEADER))
+        else if(ForNode::is(cmd))
         {
             std::cout<<"Identified as for statement."<<std::endl;
             temp = ts.createUntil({ENDKEYWORD},i,ts,true);
@@ -82,34 +39,15 @@ ASTNode* assembleCmdSeq(TokenSegment ts,bool isLoop)
         }
         return_node->branches.push_back(assembleCmd(cmd));
         i++;
-
     }
     return return_node;
 }
 ASTNode* assembleCmd(TokenSegment ts)
 {
-    std::cout<<"Checking command:("<<ts.getStringValue()<<")\n";
-    ASTNode* return_node;
-    if(checkIdentification(ts,IFHEADER))
-    {
-        return_node = assembleIf(ts);
-    }
-    else if(checkIdentification(ts,FORHEADER))
-    {
-        return_node = assembleFor(ts);
-    }
-    else if(checkIdentification(ts,RETURNCMD)) return_node = assembleReturnCmd(ts);
-    //else if(checkIdentification(ts,VARDEC)) return_node->branches.push_back(assembleVariableDeclaration(ts));
-    //else if(checkIdentification(ts,VARSET)) return_node->branches.push_back(assembleVariableAssignment(ts));
-    //else if(checkIdentification(ts,VARDEC)) return_node->branches.push_back(assembleVariableDeclaration(ts));
-    else{
-        return_node = new ASTNode(CMD);
-        return_node->token = ts.getStringValue();
-    }
-    std::cout<<"Command checked!"<<std::endl;
+    ASTNode* return_node = assembleVarInit(ts);
     return return_node;
 }
-*/
+
 ASTNode* assembleVarInit(TokenSegment ts)
 {
     ASTNode* return_node = new VarNode();
@@ -345,10 +283,19 @@ void ASTNode::assemble(){
 }
 void VarNode::assemble(){
     finished_result = node_data.data["type"] + " " + node_data.data["name"];
-}/*
-void ASTNode::assemble(){
-    fail("Abstract class is being assembled!");
 }
+void IfNode::assemble(){
+    for(auto b : branches) b->assemble();
+    finished_result = "if (" + branches[0]->finished_result + "){\n" + branches[1]->finished_result + "}"; 
+}
+void CmdSeqNode::assemble(){
+    for(auto b : branches) b->assemble();
+    for(auto b : branches)
+    {
+        finished_result += b->finished_result + ";\n";
+    }
+}
+/*
 void ASTNode::assemble(){
     fail("Abstract class is being assembled!");
 }

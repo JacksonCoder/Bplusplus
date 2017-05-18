@@ -20,7 +20,7 @@ class Scope {
 class ASTNode
 {
     public:
-        ASTNode(Type); //<-Constructor
+        ASTNode();
         ~ASTNode();
         Type type;
         Scope scope;
@@ -34,23 +34,42 @@ class ASTNode
 };
 class VarNode : public ASTNode {
     public:
-        VarNode(): ASTNode(VARINIT) {}
         virtual void assemble();
+        static bool is(TokenSegment);
 };
-class ExprNode : ASTNode {
+class ExprNode : public ASTNode {
     public:
         virtual void assemble();
+        static bool is(TokenSegment);
 };
-class IfNode : ASTNode {
+class IfNode : public ASTNode {
     public:
         virtual void assemble();
+        static bool is(TokenSegment);
 };
-class CmdSeqNode : ASTNode {
+class CmdSeqNode : public ASTNode {
     public:
         virtual void assemble();
+        static bool is(TokenSegment);
 };
-class CmdNode : ASTNode {
+class CmdNode : public ASTNode {
     public:
         virtual void assemble();
+        static bool is(TokenSegment);
+};
+class ReturnNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
+};
+class DeclNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
+};
+class ForNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
 };
 #endif // ASTNode_H
