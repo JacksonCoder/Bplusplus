@@ -41,10 +41,21 @@ Features of B++:
 This compiler has the job of turning B++ code into C++ code. Some error-checking is handled, but not all of it. We leave it up to the C++ compiler's much more robust error-checker to find things like template errors and such.
 
 To get this thing working, you will need to first ```git clone``` the project (you should have git installed first):
-``` git clone https://github.com/JacksonCoder/Bplusplus```
-to compile, use the Makefile:
-```make all```
-To run some tests, type:
-```make runtest```
+``` 
+git clone https://github.com/JacksonCoder/Bplusplus
+```
+To compile, use the Makefile:
+```
+make compiler
+```
+To remove object files for a clean build:
+```
+make clean
+```
 
-Enjoy!
+To run some tests, type:
+```
+make run_example
+```
+
+This project is still a work in progress, but feel free to use it.
