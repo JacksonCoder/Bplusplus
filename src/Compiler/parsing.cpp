@@ -1,15 +1,31 @@
 #include "../../Include/parsing.h"
 #include "../../Include/ASTNode.h"
 
+TokenSegment eatExpr(unsigned int& i,TokenSegment ts) //Incoporate into object, maybe?
+{
+    TokenSegment ret;
+    for(;i<ts.size();i++)
+    {
+        ret.tokens.push_back(ts.tokens[i]);
+        if ( ts.tokens[i].getType() != NUMBER && ts.tokens[i].getType() != OPAREN && ts.tokens[i].getType() != CPAREN && ts.tokens[i].getType() != MULTIPLY && ts.tokens[i].getType() != MODULO && ts.tokens[i].getType() != DIVIDE && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != EQUALS && ts.tokens[i].getType() != NOTEQUALS)
+        {
+            break;
+        }
+    }
+    return ret;
+}
+
+
+
 ASTNode* assembleTop(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode();
-    return_node = assembleCmdSeq(ts,false);
+    return_node = assembleCmdSeq(ts);
     return return_node;
 }
 
 
-ASTNode* assembleCmdSeq(TokenSegment ts,bool isLoop)
+ASTNode* assembleCmdSeq(TokenSegment ts)
 {
     std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
     ASTNode* return_node = new CmdSeqNode();
@@ -19,32 +35,32 @@ ASTNode* assembleCmdSeq(TokenSegment ts,bool isLoop)
         TokenSegment cmd;
         cmd = ts.createUntil({TERM},i,ts,false);
         //if unique command detected, continue
-        std::cout<<"Made command:"<<cmd.getStringValue()<<std::endl;
+        if(cmd.size()==0) break; //fixes bug
         TokenSegment temp;
         if(IfNode::is(cmd))
         {
             std::cout<<"Identified as if statement."<<std::endl;
             temp = ts.createUntil({ENDKEYWORD},i,ts,true);
             i++;
+            for(auto t : temp.tokens)
+            {
+                cmd.tokens.push_back(t);
+            }
+            return_node->branches.push_back(assembleIf(cmd));
         }
         else if(ForNode::is(cmd))
         {
             std::cout<<"Identified as for statement."<<std::endl;
             temp = ts.createUntil({ENDKEYWORD},i,ts,true);
             i++;
+            for(auto t : temp.tokens)
+            {
+                cmd.tokens.push_back(t);
+            }
+            return_node->branches.push_back(assembleIf(cmd)); //FIX
         }
-        for(auto t : temp.tokens)
-        {
-            cmd.tokens.push_back(t);
-        }
-        return_node->branches.push_back(assembleCmd(cmd));
         i++;
     }
-    return return_node;
-}
-ASTNode* assembleCmd(TokenSegment ts)
-{
-    ASTNode* return_node = assembleVarInit(ts);
     return return_node;
 }
 
@@ -54,6 +70,17 @@ ASTNode* assembleVarInit(TokenSegment ts)
     return_node->node_data.data["name"] = ts.tokens[1].getValue();
     std::cout<<"CHECKING:"<<return_node->node_data.data["name"]<<std::endl;
     return_node->node_data.data["type"] = ts.tokens[0].getValue();
+    return return_node;
+}
+ASTNode* assembleIf(TokenSegment ts)
+{
+    ASTNode* return_node = new IfNode();
+    unsigned int i = 1; //skips if keyword
+    return_node->branches.push_back(assembleExpr(eatExpr(i,ts))); //expression top
+    i++; //eliminates newline
+    std::cout<<"I:"<<i<<std::endl;
+    TokenSegment commandseq = ts.createUntil({ENDKEYWORD},i,ts,true);
+    return_node->branches.push_back(assembleCmdSeq(commandseq));
     return return_node;
 }
 /*
@@ -75,7 +102,8 @@ ASTNode* assembleIf(TokenSegment ts)
     std::cout<<"Closing if"<<std::endl;
     return return_node; //NEXT add header cmds and generalize looping. FUTURE: add functions
 }
-int getOperatorPriority(TokenType operatortt) //local function
+*/
+int getOperatorPriority(TokenType operatortt)
 {
     switch(operatortt)
     {
@@ -92,10 +120,11 @@ int getOperatorPriority(TokenType operatortt) //local function
     }
     return 999;
 }
+
 ASTNode* assembleExpr(TokenSegment ts)
 {
     std::cout<<"Starting parsing"<<std::endl;
-    ASTNode* return_node = new ASTNode(EXPR);
+    ASTNode* return_node = new ExprNode();
     //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
     unsigned int a = 0;
     TokenSegment left_expr;
@@ -122,7 +151,7 @@ ASTNode* assembleExpr(TokenSegment ts)
     }
     //then calculate
     i = 0;
-    unsigned int least_prominent_operator_iterator = 0;
+    unsigned int least_prominent_operator_iterator = 999;
     while(i < ts.size()) 
     {
         //get the prominent operator
@@ -136,40 +165,41 @@ ASTNode* assembleExpr(TokenSegment ts)
         if(ts.tokens[i].getType() == CPAREN) paren_in--;
         i++;
     }
-    if(least_prominent_operator_iterator == 0) //weak 
+    if(least_prominent_operator_iterator == 999) //weak 
     {
-        return_node->token = ts.getStringValue();
+        return_node->node_data.data["end"] = "T"; 
+        return_node->branches.push_back(assembleEndpoint(ts));
         std::cout<<"breaking"<<std::endl;
         return return_node;
     }
+    return_node->node_data.data["end"] = "F";
     i = 0;
     while(i < least_prominent_operator_iterator) 
     {
         left_expr.tokens.push_back(ts.tokens[i]);
         i++;
     }
-    //TODO: Maybe move logical component to another location?
-    if(ts.tokens[i].getType() == ADD) return_node->meta = "ADD";
-    else if(ts.tokens[i].getType() == SUBTRACT) return_node->meta = "SUBTRACT";
-    else if(ts.tokens[i].getType() == DIVIDE) return_node->meta = "DIVIDE";
-    else if(ts.tokens[i].getType() == MODULO) return_node->meta = "MODULO";
-    else if(ts.tokens[i].getType() == EQUALS) return_node->meta = "EQUALS";
-    else if(ts.tokens[i].getType() == NOTEQUALS) return_node->meta = "NOTEQUALS";
+    std::cout<<ts.tokens[i].getType()<<std::endl;
+    return_node->node_data.data["op"] = ts.tokens[i].getValue();
     i++;
-    std::cout<<"Left Expression Parsed. Result:"<<left_expr.getStringValue()<<std::endl;
-
     TokenSegment right_expr;
     while(i < ts.tokens.size())
         {
             right_expr.tokens.push_back(ts.tokens[i]);
             i++;
         }
-            std::cout<<"Right Expression Parsed. Result:"<<right_expr.getStringValue()<<std::endl;
-    return_node->data["left"] = assembleExpr(left_expr);
-    return_node->data["right"] = assembleExpr(right_expr);
+    return_node->branches.push_back(assembleExpr(left_expr));
+    return_node->branches.push_back(assembleExpr(right_expr));
 
     return return_node;
 }
+ASTNode* assembleEndpoint(TokenSegment ts)
+{
+    ASTNode* return_node = new EndpointNode();
+    return_node->node_data.data["value"] = ts.getStringValue();
+    return return_node;
+}
+/*
 ASTNode* assembleIfHeader(TokenSegment ts)
 {
     ASTNode* return_node = new ASTNode(IFHEADER);
@@ -274,6 +304,11 @@ ASTNode* assembleLoop(TokenSegment ts)
     
 }
 */
+void ExprNode::assemble(){
+    for(auto b : branches) b->assemble();
+    if(node_data.data["end"]=="T"){ finished_result = branches[0]->finished_result; return;}
+    finished_result += branches[0]->finished_result + node_data.data["op"] + branches[1]->finished_result;
+}
 void ASTNode::assemble(){
     for(auto b : branches)
         {
@@ -294,6 +329,10 @@ void CmdSeqNode::assemble(){
     {
         finished_result += b->finished_result + ";\n";
     }
+}
+
+void EndpointNode::assemble() {
+    finished_result = node_data.data["value"];
 }
 /*
 void ASTNode::assemble(){

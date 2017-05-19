@@ -20,7 +20,8 @@ FUNCNAME,
 CMDSEQ,
 VARSET, //15
 VARINIT,
-EXPR
+EXPR,
+ENDPOINT
 };
 
 enum TokenType

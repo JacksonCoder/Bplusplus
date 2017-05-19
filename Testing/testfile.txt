@@ -1,1 +1,12 @@
-int thing
+if 5==3
+    if 4+5==3
+        if 5 +5
+            if 7 + 4
+            end
+        end
+        if 4 + 5
+        end
+    end
+    if 9 - 2
+    end
+end

@@ -52,11 +52,6 @@ class CmdSeqNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment);
 };
-class CmdNode : public ASTNode {
-    public:
-        virtual void assemble();
-        static bool is(TokenSegment);
-};
 class ReturnNode : public ASTNode {
     public:
         virtual void assemble();
@@ -71,5 +66,10 @@ class ForNode : public ASTNode {
     public:
         virtual void assemble();
         static bool is(TokenSegment);
+};
+class EndpointNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment){return true;} //for now
 };
 #endif // ASTNode_H
