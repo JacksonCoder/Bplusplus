@@ -7,7 +7,7 @@ TokenSegment eatExpr(unsigned int& i,TokenSegment ts) //Incoporate into object, 
     for(;i<ts.size();i++)
     {
         ret.tokens.push_back(ts.tokens[i]);
-        if ( ts.tokens[i].getType() != NUMBER && ts.tokens[i].getType() != OPAREN && ts.tokens[i].getType() != CPAREN && ts.tokens[i].getType() != MULTIPLY && ts.tokens[i].getType() != MODULO && ts.tokens[i].getType() != DIVIDE && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != EQUALS && ts.tokens[i].getType() != NOTEQUALS)
+        if ( ts.tokens[i].getType() != NUMBER && ts.tokens[i].getType() != OPAREN && ts.tokens[i].getType() != CPAREN && ts.tokens[i].getType() != MULTIPLY && ts.tokens[i].getType() != MODULO && ts.tokens[i].getType() != DIVIDE && ts.tokens[i].getType() != SUBTRACT && ts.tokens[i].getType() != ADD && ts.tokens[i].getType() != EQUALS && ts.tokens[i].getType() != NOTEQUALS) //This is really ugly/inefficient. We need methods to organize types
         {
             break;
         }
@@ -15,7 +15,19 @@ TokenSegment eatExpr(unsigned int& i,TokenSegment ts) //Incoporate into object, 
     return ret;
 }
 
-
+TokenSegment eatVarKeywords(unsigned int& i, TokenSegment ts)
+{
+    TokenSegment ret;
+    for(;i<ts.size();i++)
+    {
+        ret.tokens.push_back(ts.tokens[i]);
+        if( ts.tokens[i].getType() != ASYNCKEYWORD && ts.tokens[i].getType() != CONSTKEYWORD && ts.tokens[i].getType() != PTRKEYWORD && ts.tokens[i].getType() != SAFEKEYWORD && ts.tokens[i].getType() != REFKEYWORD)
+        {
+            break;
+        }
+    }
+    return ret;
+}
 
 ASTNode* assembleTop(TokenSegment ts)
 {
@@ -67,9 +79,13 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
 ASTNode* assembleVarInit(TokenSegment ts)
 {
     ASTNode* return_node = new VarNode();
-    return_node->node_data.data["name"] = ts.tokens[1].getValue();
-    std::cout<<"CHECKING:"<<return_node->node_data.data["name"]<<std::endl;
-    return_node->node_data.data["type"] = ts.tokens[0].getValue();
+    //iterate through keywords
+    return_node.node_data.data["const"] = "F"
+    for(int i = 0; i < ts.size()-2; i++)
+    {
+        if(ts.tokens[i].getType() == ASYNCKEYWORD) fail("Invalid token!");
+        if(ts.tokens[i].getType() == CONSTKEYWORD) return_node.node_data.data["const"] = "T";
+    }
     return return_node;
 }
 ASTNode* assembleIf(TokenSegment ts)
