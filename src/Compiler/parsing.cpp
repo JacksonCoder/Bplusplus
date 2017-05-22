@@ -222,34 +222,20 @@ ASTNode* assembleExpr(TokenSegment ts)
 
     return return_node;
 }
+
 ASTNode* assembleEndpoint(TokenSegment ts)
 {
     ASTNode* return_node = new EndpointNode();
     return_node->node_data.data["value"] = ts.getStringValue();
     return return_node;
 }
-/*
-ASTNode* assembleIfHeader(TokenSegment ts)
-{
-    ASTNode* return_node = new ASTNode(IFHEADER);
-    std::cout<<"Assembling header!";
-    unsigned int i = 1;
-    TokenSegment header = ts.createUntil({TERM},i,ts,false);
-    return_node->data["expr"] = assembleExpr(header); //CHANGE
-    return return_node;
-}
 
-ASTNode* assembleReturnCmd(TokenSegment ts)
+ASTNode* assembleFor(TokenSegment ts)
 {
-    ASTNode* return_node = new ASTNode(RETURNCMD);
-    unsigned int tokenlength = ts.size() - 1; //1 for the return keyword
-    if(tokenlength<=0) fail("Internal Error: 'return' statement identification flawed");
-    unsigned int i = 1;
-    TokenSegment expr;
-    expr = ts.createUntil({TERM},i,ts,false);
-    return_node->data["expr"] = assembleCmd(expr);
+    ASTNode* return_node = new ForNode();
     return return_node;
 }
+/*
 
 ASTNode* assembleFor(TokenSegment ts)
 {
