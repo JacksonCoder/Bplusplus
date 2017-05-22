@@ -189,6 +189,26 @@ void TokenLexer::construct(std::string name)
             {
                 mod.setType(FORKEYWORD);
             }
+            if(mod.getValue() == "pointer")
+            {
+                mod.setType(PTRKEYWORD);
+            }
+            if(mod.getValue() == "reference")
+            {
+                mod.setType(REFKEYWORD);
+            }
+            if(mod.getValue() == "async")
+            {
+                mod.setType(ASYNCKEYWORD);
+            }
+            if(mod.getValue() == "const")
+            {
+                mod.setType(CONSTKEYWORD);
+            }
+            if(mod.getValue() == "safe")
+            {
+                mod.setType(SAFEKEYWORD);
+            }
         }
         if(mod.getType() == IFKEYWORD || mod.getType() == FORKEYWORD)
         {

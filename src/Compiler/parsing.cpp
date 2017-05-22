@@ -59,6 +59,8 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
                 cmd.tokens.push_back(t);
             }
             return_node->branches.push_back(assembleIf(cmd));
+            i++;
+            continue;
         }
         else if(ForNode::is(cmd))
         {
@@ -70,8 +72,17 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
                 cmd.tokens.push_back(t);
             }
             return_node->branches.push_back(assembleIf(cmd)); //FIX
+            i++;
+            continue;
         }
-        i++;
+        else if(VarNode::is(cmd));
+        {
+            std::cout<<"Identified as variable"<<std::endl;
+            return_node->branches.push_back(assembleVarInit(cmd));
+            i++;
+            continue;
+        }
+        fail("Unrecognized command!");
     }
     return return_node;
 }
@@ -80,12 +91,14 @@ ASTNode* assembleVarInit(TokenSegment ts)
 {
     ASTNode* return_node = new VarNode();
     //iterate through keywords
-    return_node.node_data.data["const"] = "F"
+    return_node->node_data.data["const"] = "F";
     for(int i = 0; i < ts.size()-2; i++)
     {
         if(ts.tokens[i].getType() == ASYNCKEYWORD) fail("Invalid token!");
-        if(ts.tokens[i].getType() == CONSTKEYWORD) return_node.node_data.data["const"] = "T";
+        if(ts.tokens[i].getType() == CONSTKEYWORD) return_node->node_data.data["const"] = "T";
     }
+    return_node->node_data.data["type"] = ts.tokens[ts.size()-2].getValue();
+    return_node->node_data.data["name"] = ts.tokens[ts.size()-1].getValue();
     return return_node;
 }
 ASTNode* assembleIf(TokenSegment ts)
@@ -150,7 +163,7 @@ ASTNode* assembleExpr(TokenSegment ts)
     {
         if(((ts.tokens[i].getType() == ADD && ts.tokens[i].getType() == SUBTRACT && ts.tokens[i].getType() == DIVIDE) && paren_in == 0))
         {
-            paren_wrap = true;   
+            paren_wrap = true;
         }
         if(ts.tokens[i].getType() == OPAREN){ paren_in++; std::cout<<"+"<<std::endl; }
         if(ts.tokens[i].getType() == CPAREN){ paren_in--; std::cout<<"-"<<std::endl; }
@@ -168,7 +181,7 @@ ASTNode* assembleExpr(TokenSegment ts)
     //then calculate
     i = 0;
     unsigned int least_prominent_operator_iterator = 999;
-    while(i < ts.size()) 
+    while(i < ts.size())
     {
         //get the prominent operator
         std::cout<<"operator priority:"<<getOperatorPriority(ts.tokens[i].getType());
@@ -181,16 +194,16 @@ ASTNode* assembleExpr(TokenSegment ts)
         if(ts.tokens[i].getType() == CPAREN) paren_in--;
         i++;
     }
-    if(least_prominent_operator_iterator == 999) //weak 
+    if(least_prominent_operator_iterator == 999) //weak
     {
-        return_node->node_data.data["end"] = "T"; 
+        return_node->node_data.data["end"] = "T";
         return_node->branches.push_back(assembleEndpoint(ts));
         std::cout<<"breaking"<<std::endl;
         return return_node;
     }
     return_node->node_data.data["end"] = "F";
     i = 0;
-    while(i < least_prominent_operator_iterator) 
+    while(i < least_prominent_operator_iterator)
     {
         left_expr.tokens.push_back(ts.tokens[i]);
         i++;
@@ -292,7 +305,7 @@ bool checkIdentification(TokenSegment ts,Type t)
             if(ts.tokens[0].getType()==RETURNKEYWORD&& ts.size() > 1)
             {
                 std::cout<<"It's a return keyword!"<<std::endl;
-                return true;   
+                return true;
             }
             if(ts.tokens[0].getType() == RETURNKEYWORD) fail("Code error: Return statement is not finished!");
             return false;
@@ -317,7 +330,7 @@ bool checkIdentification(TokenSegment ts,Type t)
 /*
 ASTNode* assembleLoop(TokenSegment ts)
 {
-    
+
 }
 */
 void ExprNode::assemble(){
@@ -333,11 +346,12 @@ void ASTNode::assemble(){
         }
 }
 void VarNode::assemble(){
-    finished_result = node_data.data["type"] + " " + node_data.data["name"];
+    if(node_data.data["const"] == "T") finished_result += "const "; //Make sure spaces are included after we append a keyword
+    finished_result += node_data.data["type"] + " " + node_data.data["name"];
 }
 void IfNode::assemble(){
     for(auto b : branches) b->assemble();
-    finished_result = "if (" + branches[0]->finished_result + "){\n" + branches[1]->finished_result + "}"; 
+    finished_result = "if (" + branches[0]->finished_result + "){\n" + branches[1]->finished_result + "}";
 }
 void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
@@ -385,7 +399,7 @@ void assemble()
         result += "}";
         break;
     }
-    case CMD: 
+    case CMD:
     {
         result = token;
         break;

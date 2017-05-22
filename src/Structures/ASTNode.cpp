@@ -14,7 +14,13 @@ bool IfNode::is(TokenSegment ts)
 {
     return ts.tokens[0].getType() == IFKEYWORD;
 }
+
 bool ForNode::is(TokenSegment ts)
 {
     return ts.tokens[0].getType() == FORKEYWORD;
+}
+
+bool VarNode::is(TokenSegment ts)
+{
+    return ts.size() >= 2; //Add more later
 }

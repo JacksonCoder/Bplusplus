@@ -48,7 +48,7 @@ class TokenSegment
             if(list.size()<=tokens.size()) for(auto l : list)
             {
                 while (iter->getType() != l && iter->getType()!=TOKENEND) {
-                
+
                 iter++;
                 if(iter->getType()==TOKENEND) return false;
                 if(iter->getType() == l) continue;
@@ -58,7 +58,7 @@ class TokenSegment
             return true;
         }
         */
-        TokenSegment getLine(int linenumber) 
+        TokenSegment getLine(int linenumber)
         {
             std::vector<Token>::iterator iter = tokens.begin();
             while(linenumber>0)
@@ -102,7 +102,7 @@ class TokenSegment
             std::vector<Token> ret;
             bool processing = true;
             //if(std::find(ts.tokens.begin(),ts.tokens.end(),*iter) == ts.tokens.end()) fail("Internal Error: parsing exclusively end of data!");
-            
+
             std::cout<<"Parsing ("<<ts.getStringValue()<<")\n";
             unsigned int current_scope = ts.tokens[i].scopenumber;
             while(processing && i < ts.tokens.size())
