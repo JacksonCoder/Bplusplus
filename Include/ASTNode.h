@@ -72,4 +72,9 @@ class EndpointNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment){return true;} //for now
 };
+class ForHeaderNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
+};
 #endif // ASTNode_H

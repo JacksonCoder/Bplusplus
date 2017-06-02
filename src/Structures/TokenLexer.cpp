@@ -37,7 +37,7 @@ void TokenLexer::construct(std::string name)
         {
             std::string currentBuffer;
             while(isdigit(code[i])){ currentBuffer += code[i]; i++; }
-            out.push_back(NUMBER,currentBuffer,0);
+            out.push_back(Token(NUMBER,currentBuffer,0));
             i--;
             continue;
         }
@@ -45,39 +45,39 @@ void TokenLexer::construct(std::string name)
         {
             std::string currentBuffer;
             while(alphanum(code[i])){ currentBuffer += code[i]; i++; }
-            out.push_back(TEXT,currentBuffer,0);
+            out.push_back(Token(TEXT,currentBuffer,0));
             i--;
             continue;
         }
         if(c == '\t' || c == ' ')
         {
-            continue;    
+            continue;
         }
         if(c=='\n')
         {
             scopelevel = 0;
-            out.push_back(TERM,"\n",0);
+            out.push_back(Token(TERM,"\n",0));
             continue;
         }
         if(c == '(')
         {
-            out.push_back(OPAREN,"(",0);
+            out.push_back(Token(OPAREN,"(",0));
             continue;
         }
         if(c == ')')
         {
-            out.push_back(CPAREN,")",0);
+            out.push_back(Token(CPAREN,")",0));
             continue;
         }
 
         if(c == ':')
         {
-            out.push_back(COLON,":",0);
+            out.push_back(Token(COLON,":",0));
             continue;
         }
         if(c == ',')
         {
-            out.push_back(COMMA,",",0);
+            out.push_back(Token(COMMA,",",0));
             continue;
         }
         if(c == '/' && code[i+1] == '/')
@@ -86,85 +86,85 @@ void TokenLexer::construct(std::string name)
             continue;
         }
         if(c == '\"')
-        {  
+        {
             std::string currentBuffer = "\"";
             i++;
             while((code[i]!='"' || code[i-1]=='\\') && i < code.length()){currentBuffer += code[i];i++;}
             if(!(code[i]=='\"')) fail("Tokenizer Error: Unclosed quote.");
             currentBuffer += "\"";
-            out.push_back(QUOTE,currentBuffer,0);
+            out.push_back(Token(QUOTE,currentBuffer,0));
             currentBuffer.clear();
             continue;
         }
         if(c == '=' && code[i+1] == '=')
         {
-            out.push_back(EQUALS,"==",0);
+            out.push_back(Token(EQUALS,"==",0));
             continue;
         }
         if(c == '!' && code[i+1] == '=')
         {
-            out.push_back(NOTEQUALS,"!=",0);
+            out.push_back(Token(NOTEQUALS,"!=",0));
             continue;
         }
         /*
         if(c == '=')
         {
-            out.push_back(EQUALS,"=",0);
+            out.push_back(Token(EQUALS,"=",0));
             continue;
         }
         */
         if(c == '@')
         {
-            out.push_back(AT,"@",0);
+            out.push_back(Token(AT,"@",0));
             continue;
         }
         if(c == '+')
         {
-            out.push_back(ADD,"+", 0); //NEXT
+            out.push_back(Token(ADD,"+", 0)); //NEXT
             continue;
         }
         if(c == '-')
         {
-            out.push_back(SUBTRACT,"-",0);
+            out.push_back(Token(SUBTRACT,"-",0));
             continue;
         }
         if(c == '*')
         {
-            out.push_back(POINTER,"*",0);
+            out.push_back(Token(POINTER,"*",0));
             continue;
         }
         if(c == '/')
         {
-            out.push_back(DIVIDE,"/",0);
+            out.push_back(Token(DIVIDE,"/",0));
             continue;
         }
         if(c == '%')
         {
-            out.push_back(MODULO,"%",0);
+            out.push_back(Token(MODULO,"%",0));
             continue;
         }
     }
     bool done = false;
     unsigned int loopins = 0;
-    while(!done) 
+    while(!done)
     {
-    for(int a = 0; a < 2; a++) 
+    for(int a = 0; a < 2; a++)
     {
     for(int i = 0;i<out.size();i++) //begin lexing
     {
-        Token& mod = out.tokens[i];
+        Token& mod = out.at(i);
         mod.setScope(loopins);
         if(mod.getType() == TERM)
         {
-            if(out.tokens[i-1].getType() == TERM)
+            if(out.at(i-1).getType() == TERM)
             {
                 //blank line
-                out.tokens.erase(out.tokens.begin()+i);
+                out.erase(out.front()+i);
             }
         }
         if(mod.getType() == POINTER)
         {
-            //if(out.tokens[i-1] != TYPE) mod.setType(MULTIPLY)
+            //if(out.at(i-1) != TYPE) mod.setType(MULTIPLY)
         }
         if(mod.getType() == TEXT)
         {
@@ -222,7 +222,7 @@ void TokenLexer::construct(std::string name)
         }
     }
     done = true;
-    
+
     }
     if(loopins != 0) fail("Tokenizer Error: Non-closed scope!");
     }

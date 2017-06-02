@@ -12,15 +12,24 @@ class TokenSegment
         void next();
         Token get();
         TokenType type();
-        void push_back(TokenType,std::string);
+        void push_back(Token);
         int size();
-        Token at(int loc);
+        Token& at(int loc);
         std::string getStringValue();
         void append(Token t);
-        std::vector<Token> createUntil(std::initializer_list<TokenType> tokentypeil,unsigned int& i,TokenSegment& ts,bool processing_loop);
+        bool end() { return currentInc > size()-1; }
+        int scope(){return tokens[currentInc].scopenumber;}
+        void reset();
+        void erase(std::vector<Token>::iterator);
+        TokenSegment createUntil(std::initializer_list<TokenType>,TokenSegment&,bool);
+        int current(){ return currentInc; }
+        std::vector<Token>::iterator front(){ return tokens.begin(); }
+        std::vector<Token>::iterator back(){ return tokens.end(); }
+        std::string value();
+        std::vector<Token> tokens;
     protected:
     private:
-    std::vector<Token> tokens;
+
     int currentInc = 0;
     std::string cached;
 };

@@ -12,12 +12,12 @@ ASTNode::~ASTNode()
 
 bool IfNode::is(TokenSegment ts)
 {
-    return ts.tokens[0].getType() == IFKEYWORD;
+    return ts.at(0).getType() == IFKEYWORD && ts.size() > 1;
 }
 
 bool ForNode::is(TokenSegment ts)
 {
-    return ts.tokens[0].getType() == FORKEYWORD;
+    return ts.at(0).getType() == FORKEYWORD && ts.size() > 5;
 }
 
 bool VarNode::is(TokenSegment ts)
