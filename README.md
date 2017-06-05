@@ -23,9 +23,9 @@ That same thing in B++ would look much simpler, and is easier to read:
 Container{int}results
 main(const int argc,pointer pointer char argv)
   out("Input 12 numbers\n")
-  for int i < 12
+  for int i : range(0,12)
     in(results[i])
-  for int i < 12
+  for int i : range(0,12)
     out(sqrt(results[i))
   return 0
 ```
