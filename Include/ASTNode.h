@@ -77,4 +77,19 @@ class ForHeaderNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment);
 };
+class VarAssignNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
+};
+class VarInitANode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
+};
+class VarNode : public ASTNode {
+    public:
+        virtual void assemble();
+        static bool is(TokenSegment);
+};
 #endif // ASTNode_H

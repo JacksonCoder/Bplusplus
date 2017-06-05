@@ -60,7 +60,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
         TokenSegment cmd;
         cmd = ts.createUntil({TERM},ts,false);
         //if unique command detected, continue
-        if(cmd.size()==0){ std::cout<<"breaking"<<std::endl; break; } //fixes bug
+        if(cmd.size()==0) break; //fixes bug
         TokenSegment temp;
         if(IfNode::is(cmd))
         {
@@ -75,7 +75,6 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
             ts.next();
             continue;
         }
-
         else if(ForNode::is(cmd))
         {
             std::cout<<"Identified as for statement."<<std::endl;
@@ -89,7 +88,6 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
             ts.next();
             continue;
         }
-
         else if(VarNode::is(cmd));
         {
             std::cout<<"Identified as variable"<<std::endl;
@@ -118,6 +116,7 @@ ASTNode* assembleVarInit(TokenSegment ts)
 }
 ASTNode* assembleIf(TokenSegment ts)
 {
+    std::cout<<"Called at"<<ts.current()<<std::endl;
     ASTNode* return_node = new IfNode();
     ts.next();
     return_node->branches.push_back(assembleExpr(eatExpr(ts))); //expression top
@@ -227,13 +226,12 @@ ASTNode* assembleForHeader(TokenSegment ts)
 {
     ASTNode* return_node = new ForHeaderNode();
     TokenSegment var = eatVarKeywords(ts);
+    ts.next();
     var.push_back(ts.get());
     ts.next();
     var.push_back(ts.get());
     return_node->branches.push_back(assembleVarInit(var));
     //our current iterator should be the variable name
-    ts.next();
-    ts.next();
     TokenSegment secondpart;
     while(!ts.end())
     {
@@ -250,10 +248,8 @@ ASTNode* assembleFor(TokenSegment ts)
     ts.next();
     TokenSegment head = eatForHeader(ts);
     //do stuff with the header
-    ts.next();
     return_node->branches.push_back(assembleForHeader(head));
     TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
-    std::cout<<"CMDS:"<<commandseq.getStringValue()<<std::endl;
     return_node->branches.push_back(assembleCmdSeq(commandseq));
     return return_node;
 }
@@ -282,7 +278,6 @@ void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
     for(auto b : branches)
     {
-        std::cout << "Adding to fr:"<<b->finished_result<<std::endl;
         finished_result += b->finished_result + ";\n";
     }
 }
