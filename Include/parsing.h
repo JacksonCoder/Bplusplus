@@ -20,3 +20,6 @@ ASTNode* assembleIf(TokenSegment);
 ASTNode* assembleIfHeader(TokenSegment);
 ASTNode* assembleVarInit(TokenSegment);
 ASTNode* assembleEndpoint(TokenSegment);
+ASTNode* assembleVarInitA(TokenSegment);
+ASTNode* assembleVarAssign(TokenSegment);
+ASTNode* assembleVarNode(TokenSegment);
