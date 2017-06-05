@@ -299,3 +299,16 @@ void ForHeaderNode::assemble() {
     for(auto b : branches){ b->assemble();}
     finished_result = branches[0]->finished_result + " : " + branches[1]->finished_result;
 }
+
+void VarAssignNode::assemble()
+{
+
+}
+void VarInitANode::assemble()
+{
+
+}
+void VarNode::assemble()
+{
+
+}
