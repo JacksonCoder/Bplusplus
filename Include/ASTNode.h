@@ -11,12 +11,6 @@ class NodeData {
     public:
         std::map<std::string,std::string> data;
 };
-class Scope {
-    public:
-        bool inFunction;
-        bool inClass;
-        unsigned int loopsIn;
-};
 class ASTNode
 {
     public:
@@ -31,8 +25,10 @@ class ASTNode
         NodeData node_data;
         std::vector<ASTNode*> branches;
         virtual void assemble();
+        std::map<std::string,std::vector<std::string> > msg; //For 0.6
+        std::map<std::string,bool> vars_defined;
 };
-class VarNode : public ASTNode {
+class VarInitNode : public ASTNode {
     public:
         virtual void assemble();
         static bool is(TokenSegment);

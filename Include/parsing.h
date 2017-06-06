@@ -23,3 +23,4 @@ ASTNode* assembleEndpoint(TokenSegment);
 ASTNode* assembleVarInitA(TokenSegment);
 ASTNode* assembleVarAssign(TokenSegment);
 ASTNode* assembleVarNode(TokenSegment);
+ASTTree& working_tree;

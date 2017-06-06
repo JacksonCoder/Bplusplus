@@ -88,7 +88,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
             ts.next();
             continue;
         }
-        else if(VarNode::is(cmd));
+        else if(VarInitNode::is(cmd));
         {
             std::cout<<"Identified as variable"<<std::endl;
             return_node->branches.push_back(assembleVarInit(cmd));
@@ -102,7 +102,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
 
 ASTNode* assembleVarInit(TokenSegment ts)
 {
-    ASTNode* return_node = new VarNode();
+    ASTNode* return_node = new VarInitNode();
     //iterate through keywords
     return_node->node_data.data["const"] = "F";
     for(ts.reset();!ts.end();ts.next())
@@ -112,6 +112,7 @@ ASTNode* assembleVarInit(TokenSegment ts)
     }
     return_node->node_data.data["type"] = ts.at(ts.size()-2).getValue();
     return_node->node_data.data["name"] = ts.at(ts.size()-1).getValue();
+    return_node->vars_defined[name] = true;
     return return_node;
 }
 ASTNode* assembleIf(TokenSegment ts)
@@ -231,6 +232,7 @@ ASTNode* assembleForHeader(TokenSegment ts)
     ts.next();
     var.push_back(ts.get());
     return_node->branches.push_back(assembleVarInit(var));
+    return_node->vars_defined = return_node->branches[0]->vars_defined;
     //our current iterator should be the variable name
     TokenSegment secondpart;
     while(!ts.end())
@@ -249,8 +251,21 @@ ASTNode* assembleFor(TokenSegment ts)
     TokenSegment head = eatForHeader(ts);
     //do stuff with the header
     return_node->branches.push_back(assembleForHeader(head));
+    return_node->vars_defined = return_node->branches[0]->vars_defined;
+    working_tree.mapVar(vars_defined.begin()->first,vars_defined.begin()->second,*return_node);
+    std::cout<<working_tree.check(vars_defined.begin()->first,*return_node)<<std::endl;
     TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
     return_node->branches.push_back(assembleCmdSeq(commandseq));
+    return return_node;
+}
+
+ASTNode* assembleVarNode(TokenSegment ts)
+{
+    ASTNode* return_node = new VarNode();
+    if(!working_tree.check(ts.getStringValue(),&ts))
+    {
+        std::cout<<"???"<<std::endl;
+    }
     return return_node;
 }
 
@@ -266,7 +281,7 @@ void ASTNode::assemble(){
             finished_result += b->finished_result;
         }
 }
-void VarNode::assemble(){
+void VarInitNode::assemble(){
     if(node_data.data["const"] == "T") finished_result += "const "; //Make sure spaces are included after we append a keyword
     finished_result += node_data.data["type"] + " " + node_data.data["name"];
 }
@@ -278,7 +293,7 @@ void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
     for(auto b : branches)
     {
-        finished_result += b->finished_result + ";\n";
+        finished_result += b->finished_result + ";\n";ß
     }
 }
 

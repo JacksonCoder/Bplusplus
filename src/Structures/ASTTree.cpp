@@ -18,3 +18,7 @@ void ASTTree::build(TokenSegment tokenlist)
     root->assemble();
     std::cout<<"Finished result:\n"<<root->finished_result<<std::endl;
 }
+void mapVar(std::string name,std::string type,TokenSegment* scope)
+{
+    vars[{name,scope}] = type;
+}
