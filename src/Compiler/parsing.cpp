@@ -1,7 +1,7 @@
 #include "../../Include/parsing.h"
 #include "../../Include/ASTNode.h"
 
-TokenSegment eatExpr(TokenSegment& ts) //Incoporate into object, maybe?
+TokenSegment eatExpr(TokenSegment& ts)
 {
     TokenSegment ret;
     for(;!ts.end();ts.next())
@@ -45,16 +45,16 @@ TokenSegment eatVarKeywords(TokenSegment& ts)
 
 ASTNode* assembleTop(TokenSegment ts)
 {
-    ASTNode* return_node = new ASTNode();
-    return_node = assembleCmdSeq(ts);
+    ASTNode* return_node = new ASTNode(NULL);
+    return_node = assembleCmdSeq(ts,return_node);
     return return_node;
 }
 
 
-ASTNode* assembleCmdSeq(TokenSegment ts)
+ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
 {
     std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
-    ASTNode* return_node = new CmdSeqNode();
+    ASTNode* return_node = new CmdSeqNode(parent);
     while(!ts.end())
     {
         TokenSegment cmd;
@@ -71,7 +71,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
             {
                 cmd.push_back(temp.get());
             }
-            return_node->branches.push_back(assembleIf(cmd));
+            return_node->branches.push_back(assembleIf(cmd,return_node));
             ts.next();
             continue;
         }
@@ -84,14 +84,14 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
             {
                 cmd.push_back(temp.get());
             }
-            return_node->branches.push_back(assembleFor(cmd)); //FIX
+            return_node->branches.push_back(assembleFor(cmd,return_node));
             ts.next();
             continue;
         }
-        else if(VarInitNode::is(cmd));
+        else if(VarInitNode::is(cmd))
         {
             std::cout<<"Identified as variable"<<std::endl;
-            return_node->branches.push_back(assembleVarInit(cmd));
+            return_node->branches.push_back(assembleVarInit(cmd,return_node));
             ts.next();
             continue;
         }
@@ -100,9 +100,9 @@ ASTNode* assembleCmdSeq(TokenSegment ts)
     return return_node;
 }
 
-ASTNode* assembleVarInit(TokenSegment ts)
+ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new VarInitNode();
+    ASTNode* return_node = new VarInitNode(parent);
     //iterate through keywords
     return_node->node_data.data["const"] = "F";
     for(ts.reset();!ts.end();ts.next())
@@ -112,18 +112,18 @@ ASTNode* assembleVarInit(TokenSegment ts)
     }
     return_node->node_data.data["type"] = ts.at(ts.size()-2).getValue();
     return_node->node_data.data["name"] = ts.at(ts.size()-1).getValue();
-    return_node->vars_defined[name] = true;
+    return_node->vars_defined[return_node->node_data.data["name"]] = true;
     return return_node;
 }
-ASTNode* assembleIf(TokenSegment ts)
+ASTNode* assembleIf(TokenSegment ts,ASTNode* parent)
 {
     std::cout<<"Called at"<<ts.current()<<std::endl;
-    ASTNode* return_node = new IfNode();
+    ASTNode* return_node = new IfNode(parent);
     ts.next();
-    return_node->branches.push_back(assembleExpr(eatExpr(ts))); //expression top
+    return_node->branches.push_back(assembleExpr(eatExpr(ts),parent)); //expression top
     ts.next(); //eliminates newline
     TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
-    return_node->branches.push_back(assembleCmdSeq(commandseq));
+    return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
     return return_node;
 }
 
@@ -145,10 +145,10 @@ int getOperatorPriority(TokenType operatortt)
     return 999;
 }
 
-ASTNode* assembleExpr(TokenSegment ts)
+ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
 {
     std::cout<<"Starting parsing"<<std::endl;
-    ASTNode* return_node = new ExprNode();
+    ASTNode* return_node = new ExprNode(parent);
     //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
     //unsigned int a = 0;
     TokenSegment left_expr,right_expr;
@@ -192,7 +192,7 @@ ASTNode* assembleExpr(TokenSegment ts)
     if(least_prominent_operator_iterator == 0) //weak, there must be a better way to do this...
     {
         return_node->node_data.data["end"] = "T";
-        return_node->branches.push_back(assembleEndpoint(ts));
+        return_node->branches.push_back(assembleEndpoint(ts,parent));
         std::cout<<"breaking"<<std::endl;
         return return_node;
     }
@@ -211,27 +211,27 @@ ASTNode* assembleExpr(TokenSegment ts)
             right_expr.push_back(ts.get());
             ts.next();
         }
-    return_node->branches.push_back(assembleExpr(left_expr));
-    return_node->branches.push_back(assembleExpr(right_expr));
+    return_node->branches.push_back(assembleExpr(left_expr,return_node));
+    return_node->branches.push_back(assembleExpr(right_expr,return_node));
     return return_node;
 }
 
-ASTNode* assembleEndpoint(TokenSegment ts)
+ASTNode* assembleEndpoint(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new EndpointNode();
+    ASTNode* return_node = new EndpointNode(parent);
     return_node->node_data.data["value"] = ts.getStringValue();
     return return_node;
 }
 
-ASTNode* assembleForHeader(TokenSegment ts)
+ASTNode* assembleForHeader(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new ForHeaderNode();
+    ASTNode* return_node = new ForHeaderNode(parent);
     TokenSegment var = eatVarKeywords(ts);
     ts.next();
     var.push_back(ts.get());
     ts.next();
     var.push_back(ts.get());
-    return_node->branches.push_back(assembleVarInit(var));
+    return_node->branches.push_back(assembleVarInit(var,return_node));
     return_node->vars_defined = return_node->branches[0]->vars_defined;
     //our current iterator should be the variable name
     TokenSegment secondpart;
@@ -240,29 +240,29 @@ ASTNode* assembleForHeader(TokenSegment ts)
         secondpart.push_back(ts.get());
         ts.next();
     }
-    return_node->branches.push_back(assembleEndpoint(secondpart));
+    return_node->branches.push_back(assembleEndpoint(secondpart,return_node));
     return return_node;
 }
 
-ASTNode* assembleFor(TokenSegment ts)
+ASTNode* assembleFor(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new ForNode();
+    ASTNode* return_node = new ForNode(parent);
     ts.next();
     TokenSegment head = eatForHeader(ts);
     //do stuff with the header
-    return_node->branches.push_back(assembleForHeader(head));
+    return_node->branches.push_back(assembleForHeader(head,return_node));
     return_node->vars_defined = return_node->branches[0]->vars_defined;
-    working_tree.mapVar(vars_defined.begin()->first,vars_defined.begin()->second,*return_node);
-    std::cout<<working_tree.check(vars_defined.begin()->first,*return_node)<<std::endl;
+    //working_tree->mapVar(return_node->vars_defined.begin()->first,vars_defined.begin()->second,return_node);
+    //std::cout<<working_tree->check(return_node->vars_defined.begin()->first,return_node)<<std::endl;
     TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
-    return_node->branches.push_back(assembleCmdSeq(commandseq));
+    return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
     return return_node;
 }
 
-ASTNode* assembleVarNode(TokenSegment ts)
+ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new VarNode();
-    if(!working_tree.check(ts.getStringValue(),&ts))
+    ASTNode* return_node = new VarNode(parent);
+    if(!working_tree->check(ts.getStringValue(),return_node))
     {
         std::cout<<"???"<<std::endl;
     }
@@ -293,7 +293,7 @@ void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
     for(auto b : branches)
     {
-        finished_result += b->finished_result + ";\n";ß
+        finished_result += b->finished_result + ";\n";
     }
 }
 

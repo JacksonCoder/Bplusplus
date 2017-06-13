@@ -1,7 +1,10 @@
 #include "../../Include/ASTNode.h"
 
-ASTNode::ASTNode()
-{}
+ASTNode::ASTNode(ASTNode* parent)
+{
+	this->parent = parent;
+}
+
 ASTNode::~ASTNode()
 {
     for(int branch_i = 0; branch_i < branches.size();branch_i++)
@@ -23,4 +26,8 @@ bool ForNode::is(TokenSegment ts)
 bool VarNode::is(TokenSegment ts)
 {
     return ts.size() >= 2; //Add more later
+}
+bool VarInitNode::is(TokenSegment ts)
+{
+	return false;
 }

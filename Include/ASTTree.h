@@ -19,12 +19,12 @@ class ASTTree
         std::string type(std::string,ASTNode*);
         bool varSearch(std::string,ASTNode*);
         void build(TokenSegment);
-        void addVar(std::string,TokenSegment*);
-        bool check(std::string name);
+        void mapVar(std::string,std::string,ASTNode*);
+        bool check(std::string,ASTNode*);
     protected:
     private:
          ASTNode* root;
-         std::map<std::pair<std::string,TokenSegment*> > varmap;
+         std::map<std::pair<std::string,ASTNode*>,std::string> vars;
 };
 
 #endif // ASTTree_H
