@@ -1,6 +1,8 @@
 #include "../../Include/parsing.h"
 #include "../../Include/ASTNode.h"
 
+ASTTree* working_tree;
+
 TokenSegment eatExpr(TokenSegment& ts)
 {
     TokenSegment ret;
@@ -43,8 +45,9 @@ TokenSegment eatVarKeywords(TokenSegment& ts)
     return ret;
 }
 
-ASTNode* assembleTop(TokenSegment ts)
+ASTNode* assembleTop(TokenSegment ts,ASTTree* tree)
 {
+    working_tree = tree;
     ASTNode* return_node = new ASTNode(NULL);
     return_node = assembleCmdSeq(ts,return_node);
     return return_node;
@@ -112,7 +115,7 @@ ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
     }
     return_node->node_data.data["type"] = ts.at(ts.size()-2).getValue();
     return_node->node_data.data["name"] = ts.at(ts.size()-1).getValue();
-    return_node->vars_defined[return_node->node_data.data["name"]] = true;
+    return_node->vars_defined[{return_node->node_data.data["name"],return_node->node_data.data["type"]}] = true;
     return return_node;
 }
 ASTNode* assembleIf(TokenSegment ts,ASTNode* parent)
@@ -249,11 +252,12 @@ ASTNode* assembleFor(TokenSegment ts,ASTNode* parent)
     ASTNode* return_node = new ForNode(parent);
     ts.next();
     TokenSegment head = eatForHeader(ts);
+    std::cout<<head.getStringValue()<<std::endl;
     //do stuff with the header
     return_node->branches.push_back(assembleForHeader(head,return_node));
     return_node->vars_defined = return_node->branches[0]->vars_defined;
-    //working_tree->mapVar(return_node->vars_defined.begin()->first,vars_defined.begin()->second,return_node);
-    //std::cout<<working_tree->check(return_node->vars_defined.begin()->first,return_node)<<std::endl;
+    working_tree->mapVar(return_node->vars_defined.begin()->first.first,return_node->vars_defined.begin()->first.second,return_node);
+    std::cout<<"?:"<<working_tree->check(return_node->vars_defined.begin()->first.first,return_node)<<std::endl;
     TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
     return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
     return return_node;

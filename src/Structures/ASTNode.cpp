@@ -29,5 +29,5 @@ bool VarNode::is(TokenSegment ts)
 }
 bool VarInitNode::is(TokenSegment ts)
 {
-	return false;
+	return ts.size() >= 3;
 }

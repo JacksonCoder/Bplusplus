@@ -5,7 +5,7 @@
 #include "ASTTree.h"
 class ASTTree;
 class ASTNode;
-ASTNode* assembleTop(TokenSegment,ASTNode* parent);
+ASTNode* assembleTop(TokenSegment,ASTTree*);
 ASTNode* assembleCmdSeq(TokenSegment,ASTNode* parent);
 ASTNode* assembleReturnCmd(TokenSegment,ASTNode* parent);
 ASTNode* assembleFor(TokenSegment,ASTNode* parent);
@@ -27,5 +27,4 @@ ASTNode* assembleEndpoint(TokenSegment,ASTNode* parent);
 ASTNode* assembleVarInitA(TokenSegment,ASTNode* parent);
 ASTNode* assembleVarAssign(TokenSegment,ASTNode* parent);
 ASTNode* assembleVarNode(TokenSegment,ASTNode* parent);
-ASTTree* working_tree;
 #endif //PARSING_H

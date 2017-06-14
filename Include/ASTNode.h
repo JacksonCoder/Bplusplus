@@ -25,7 +25,7 @@ class ASTNode
         std::vector<ASTNode*> branches;
         virtual void assemble();
         std::map<std::string,std::vector<std::string> > msg; //For 0.6
-        std::map<std::string,bool> vars_defined;
+        std::map<std::pair<std::string,std::string>,bool> vars_defined;
 	ASTNode* parent;
 };
 class VarInitNode : public ASTNode {
