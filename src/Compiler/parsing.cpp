@@ -36,11 +36,11 @@ TokenSegment eatVarKeywords(TokenSegment& ts)
     TokenSegment ret;
     for(;!ts.end();ts.next())
     {
-        ret.push_back(ts.get());
         if( ts.type() != ASYNCKEYWORD && ts.type() != CONSTKEYWORD && ts.type() != PTRKEYWORD && ts.type() != SAFEKEYWORD && ts.type() != REFKEYWORD)
         {
             break;
         }
+        ret.push_back(ts.get());
     }
     return ret;
 }
@@ -230,13 +230,14 @@ ASTNode* assembleForHeader(TokenSegment ts,ASTNode* parent)
 {
     ASTNode* return_node = new ForHeaderNode(parent);
     TokenSegment var = eatVarKeywords(ts);
-    ts.next();
+    std::cout<<var.getStringValue()<<std::endl;
     var.push_back(ts.get());
     ts.next();
     var.push_back(ts.get());
     return_node->branches.push_back(assembleVarInit(var,return_node));
     return_node->vars_defined = return_node->branches[0]->vars_defined;
     //our current iterator should be the variable name
+    ts.next();ts.next();
     TokenSegment secondpart;
     while(!ts.end())
     {
