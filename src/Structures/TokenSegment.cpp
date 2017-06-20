@@ -2,7 +2,6 @@
 
 TokenSegment::TokenSegment()
 {
-    std::cout<<"Creating new TokenSegment with currentinc:"<<currentInc<<std::endl;
 }
 
 TokenSegment::~TokenSegment()
@@ -41,6 +40,11 @@ std::string TokenSegment::getStringValue()
             TokenSegment ret;
             bool processing = true;
             std::cout<<"Parsing ("<<ts.getStringValue()<<")\n";
+            std::cout<<"Numerical form:";
+            for(auto t : ts.tokens)
+            {
+                std::cout<<t.getType()<<"-";
+            }
             unsigned int current_scope = ts.scope();
             while(processing && !ts.end())
             {
@@ -48,12 +52,13 @@ std::string TokenSegment::getStringValue()
                 {
                     if(ts.type() == tt && (ts.scope() == current_scope || !processing_loop))
                     {
+                        std::cout<<"breaking because ts.type is "<<ts.type()<<" and tt is "<<tt<<std::endl;
                         processing = false;
                     }
                 }
                 if(!processing) break;
                 ret.push_back(ts.get());
-                std::cout<<"Iterating";
+                std::cout<<"Iterating"<<ts.current()<<std::endl;
                 ts.next();
             }
             return ret;

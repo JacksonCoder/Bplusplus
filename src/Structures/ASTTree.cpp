@@ -21,15 +21,27 @@ void ASTTree::mapVar(std::string name,std::string type,ASTNode* scope)
 {
     vars[{name,scope}] = type;
 }
+
+bool r_check(ASTTree* tree,std::string name,ASTNode* location,unsigned int listloc)
+{
+	/*
+	if (location->parent == NULL)
+	{
+		return false;
+	}
+	else if (tree->vars.find({name,location}) != vars.end())
+	{
+		return true;
+	}
+
+
+	listloc //work on this
+	return r_check(tree,name,location->parent,listloc);
+	*/
+	return false;
+}
+
 bool ASTTree::check(std::string name,ASTNode* location)
 {
-	while(location->parent!=NULL)
-	{;
-		if(vars.find({name,location})!=vars.end())
-		{
-			return true;
-		}
-		location = location->parent;
-	}
-	return false;
+	return r_check(this,name,location,0);
 }

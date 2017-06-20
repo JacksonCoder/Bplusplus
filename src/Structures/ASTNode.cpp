@@ -20,14 +20,14 @@ bool IfNode::is(TokenSegment ts)
 
 bool ForNode::is(TokenSegment ts)
 {
-    return ts.at(0).getType() == FORKEYWORD && ts.size() > 4;
+    return ts.at(0).getType() == FORKEYWORD && ts.size() >= 4;
 }
 
 bool VarNode::is(TokenSegment ts)
 {
-    return ts.size() >= 2; //Add more later
+    return false;//ts.size() >= 2; //Add more later
 }
 bool VarInitNode::is(TokenSegment ts)
 {
-	return ts.size() >= 3;
+	return false;//ts.size() >= 3;
 }

@@ -63,7 +63,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
         TokenSegment cmd;
         cmd = ts.createUntil({TERM},ts,false);
         //if unique command detected, continue
-        if(cmd.size()==0) break; //fixes bug
+        if(cmd.size()==0 && !ts.end()){ std::cout<<"b"; ts.next(); continue; }//fixes bug
         TokenSegment temp;
         if(IfNode::is(cmd))
         {
@@ -120,7 +120,6 @@ ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
 }
 ASTNode* assembleIf(TokenSegment ts,ASTNode* parent)
 {
-    std::cout<<"Called at"<<ts.current()<<std::endl;
     ASTNode* return_node = new IfNode(parent);
     ts.next();
     return_node->branches.push_back(assembleExpr(eatExpr(ts),parent)); //expression top
@@ -256,6 +255,7 @@ ASTNode* assembleFor(TokenSegment ts,ASTNode* parent)
     std::cout<<head.getStringValue()<<std::endl;
     //do stuff with the header
     return_node->branches.push_back(assembleForHeader(head,return_node));
+    ts.next();
     return_node->vars_defined = return_node->branches[0]->vars_defined;
     working_tree->mapVar(return_node->vars_defined.begin()->first.first,return_node->vars_defined.begin()->first.second,return_node);
     std::cout<<"?:"<<working_tree->check("things",return_node)<<std::endl;
@@ -298,6 +298,7 @@ void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
     for(auto b : branches)
     {
+        std::cout<<b->finished_result<<std::endl;
         finished_result += b->finished_result + ";\n";
     }
 }
@@ -307,6 +308,7 @@ void EndpointNode::assemble() {
 }
 
 void ForNode::assemble() {
+    std::cout<<branches[1]->branches.size()<<std::endl;
     for(auto b : branches)
     {
         b->assemble();
