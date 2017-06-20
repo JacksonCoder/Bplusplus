@@ -258,7 +258,7 @@ ASTNode* assembleFor(TokenSegment ts,ASTNode* parent)
     ts.next();
     return_node->vars_defined = return_node->branches[0]->vars_defined;
     working_tree->mapVar(return_node->vars_defined.begin()->first.first,return_node->vars_defined.begin()->first.second,return_node);
-    std::cout<<"?:"<<working_tree->check("things",return_node)<<std::endl;
+    std::cout<<"?:"<<working_tree->check("thing",return_node)<<std::endl;
     TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
     return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
     return return_node;

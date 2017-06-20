@@ -25,9 +25,9 @@ bool ForNode::is(TokenSegment ts)
 
 bool VarNode::is(TokenSegment ts)
 {
-    return false;//ts.size() >= 2; //Add more later
+    return ts.size() >= 2; //Add more later
 }
 bool VarInitNode::is(TokenSegment ts)
 {
-	return false;//ts.size() >= 3;
+	return ts.size() >= 3;
 }

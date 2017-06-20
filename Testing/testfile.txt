@@ -1,8 +1,4 @@
-if things
-    for int things : container
-        if things
-        end
-    end
-    if things
-    end
+for int thing : container
+end
+for const int things : container
 end

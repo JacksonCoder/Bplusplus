@@ -23,6 +23,7 @@ class ASTTree
         bool check(std::string,ASTNode*);
     protected:
     private:
+         bool r_check(ASTTree*,std::string,ASTNode*,unsigned int);
          ASTNode* root;
          std::map<std::pair<std::string,ASTNode*>,std::string> vars;
 };
