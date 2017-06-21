@@ -105,17 +105,18 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
 
 ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new VarInitNode(parent);
+    VarInitNode* return_node = new VarInitNode(parent);
+    std::cout << "t" <<ts.size() <<std ::endl;
     //iterate through keywords
-    return_node->node_data.data["const"] = "F";
+    return_node->isconst = false;
     for(ts.reset();!ts.end();ts.next())
     {
         if(ts.type() == ASYNCKEYWORD) fail("Invalid token!");
-        if(ts.type() == CONSTKEYWORD) return_node->node_data.data["const"] = "T";
+        if(ts.type() == CONSTKEYWORD) return_node->isconst = true;
     }
-    return_node->node_data.data["type"] = ts.at(ts.size()-2).getValue();
-    return_node->node_data.data["name"] = ts.at(ts.size()-1).getValue();
-    return_node->vars_defined[{return_node->node_data.data["name"],return_node->node_data.data["type"]}] = true;
+    return_node->vtype = ts.at(ts.size()-2).getValue();
+    return_node->vname = ts.at(ts.size()-1).getValue();
+    return_node->vars_defined[{return_node->vname,return_node->vtype}] = true;
     return return_node;
 }
 ASTNode* assembleIf(TokenSegment ts,ASTNode* parent)
@@ -150,7 +151,7 @@ int getOperatorPriority(TokenType operatortt)
 ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
 {
     std::cout<<"Starting parsing"<<std::endl;
-    ASTNode* return_node = new ExprNode(parent);
+    ExprNode* return_node = new ExprNode(parent);
     //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
     //unsigned int a = 0;
     TokenSegment left_expr,right_expr;
@@ -193,12 +194,12 @@ ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
     }
     if(least_prominent_operator_iterator == 0) //weak, there must be a better way to do this...
     {
-        return_node->node_data.data["end"] = "T";
+        return_node->endpoint = true;
         return_node->branches.push_back(assembleEndpoint(ts,parent));
         std::cout<<"breaking"<<std::endl;
         return return_node;
     }
-    return_node->node_data.data["end"] = "F";
+    return_node->endpoint = false;
     ts.reset();
     while(ts.current() < least_prominent_operator_iterator)
     {
@@ -206,7 +207,7 @@ ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
         ts.next();
     }
     std::cout<<ts.type()<<std::endl;
-    return_node->node_data.data["op"] = ts.value();
+    return_node->operation = ts.value();
     ts.next();
     while(!ts.end())
         {
@@ -220,8 +221,8 @@ ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
 
 ASTNode* assembleEndpoint(TokenSegment ts,ASTNode* parent)
 {
-    ASTNode* return_node = new EndpointNode(parent);
-    return_node->node_data.data["value"] = ts.getStringValue();
+    EndpointNode* return_node = new EndpointNode(parent);
+    return_node->string_comp = ts.getStringValue();
     return return_node;
 }
 
@@ -276,8 +277,8 @@ ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
 
 void ExprNode::assemble(){
     for(auto b : branches) b->assemble();
-    if(node_data.data["end"]=="T"){ finished_result = branches[0]->finished_result; return;}
-    finished_result += branches[0]->finished_result + node_data.data["op"] + branches[1]->finished_result;
+    if(endpoint){ finished_result = branches[0]->finished_result; return;}
+    finished_result += branches[0]->finished_result + operation + branches[1]->finished_result;
 }
 void ASTNode::assemble(){
     for(auto b : branches)
@@ -287,8 +288,8 @@ void ASTNode::assemble(){
         }
 }
 void VarInitNode::assemble(){
-    if(node_data.data["const"] == "T") finished_result += "const "; //Make sure spaces are included after we append a keyword
-    finished_result += node_data.data["type"] + " " + node_data.data["name"];
+    if(isconst) finished_result += "const "; //Make sure spaces are included after we append a keyword
+    finished_result += vtype + " " + vname;
 }
 void IfNode::assemble(){
     for(auto b : branches) b->assemble();
@@ -304,9 +305,8 @@ void CmdSeqNode::assemble(){
 }
 
 void EndpointNode::assemble() {
-    finished_result = node_data.data["value"];
+    finished_result = string_comp;
 }
-
 void ForNode::assemble() {
     std::cout<<branches[1]->branches.size()<<std::endl;
     for(auto b : branches)
@@ -331,6 +331,16 @@ void VarInitANode::assemble()
 
 }
 void VarNode::assemble()
+{
+
+}
+
+void ParenList::assemble()
+{
+    for(auto b : branches){ b->assemble(); finished_result += b->finished_result;}
+}
+
+void FuncNode::assemble()
 {
 
 }

@@ -39,7 +39,6 @@ std::string TokenSegment::getStringValue()
         {
             TokenSegment ret;
             bool processing = true;
-            std::cout<<"Parsing ("<<ts.getStringValue()<<")\n";
             std::cout<<"Numerical form:";
             for(auto t : ts.tokens)
             {
@@ -58,7 +57,6 @@ std::string TokenSegment::getStringValue()
                 }
                 if(!processing) break;
                 ret.push_back(ts.get());
-                std::cout<<"Iterating"<<ts.current()<<std::endl;
                 ts.next();
             }
             return ret;

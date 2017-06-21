@@ -16,12 +16,8 @@ class ASTNode
     public:
         ASTNode(ASTNode*);
         ~ASTNode();
-        Type type;
         unsigned int line;
-        TokenSegment component;
-        std::string str_component;
         std::string finished_result;
-        NodeData node_data;
         std::vector<ASTNode*> branches;
         virtual void assemble();
         std::map<std::string,std::vector<std::string> > msg; //For 0.6
@@ -31,12 +27,17 @@ class ASTNode
 class VarInitNode : public ASTNode {
     public:
 	using ASTNode::ASTNode;
+	std::string vtype;
+	std::string vname;
+	bool isconst;
         virtual void assemble();
         static bool is(TokenSegment);
 };
 class ExprNode : public ASTNode {
     public:
 	using ASTNode::ASTNode;
+	std::string operation;
+	bool endpoint;
         virtual void assemble();
         static bool is(TokenSegment);
 };
@@ -71,6 +72,7 @@ class ForNode : public ASTNode {
 class EndpointNode : public ASTNode {
     public:
 	using ASTNode::ASTNode;
+    std::string string_comp;
         virtual void assemble();
         static bool is(TokenSegment){return true;} //for now
 };
@@ -103,11 +105,11 @@ class ParenList : public ASTNode {
     using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);
-}
+};
 class FuncNode : public ASTNode {
     public:
     using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);
-}
+};
 #endif // ASTNode_H
