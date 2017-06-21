@@ -31,3 +31,7 @@ bool VarInitNode::is(TokenSegment ts)
 {
 	return ts.size() >= 3;
 }
+bool ParenList::is(TokenSegment ts)
+{
+    return true;
+}

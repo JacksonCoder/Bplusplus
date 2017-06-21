@@ -1,4 +1,6 @@
-for int thing : container
+for int things : container
 end
 for const int things : container
+end
+for const int thing : container
 end

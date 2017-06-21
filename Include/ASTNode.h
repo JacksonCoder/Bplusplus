@@ -98,4 +98,16 @@ class VarNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment);
 };
+class ParenList : public ASTNode {
+    public:
+    using ASTNode::ASTNode;
+        virtual void assemble();
+        static bool is(TokenSegment);
+}
+class FuncNode : public ASTNode {
+    public:
+    using ASTNode::ASTNode;
+        virtual void assemble();
+        static bool is(TokenSegment);
+}
 #endif // ASTNode_H
