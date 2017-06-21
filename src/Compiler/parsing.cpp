@@ -275,6 +275,19 @@ ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
     return return_node;
 }
 
+ASTNode* assembleFunc(TokenSegment ts,ASTNode* parent)
+{
+    FuncNode* return_node = new FuncNode(parent);
+    return return_node;
+}
+
+ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
+{
+    ParenList* return_node = new ParenList(parent);
+    return return_node;
+}
+
+
 void ExprNode::assemble(){
     for(auto b : branches) b->assemble();
     if(endpoint){ finished_result = branches[0]->finished_result; return;}
