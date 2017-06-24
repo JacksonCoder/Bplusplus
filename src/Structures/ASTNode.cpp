@@ -2,7 +2,7 @@
 
 ASTNode::ASTNode(ASTNode* parent)
 {
-	this->parent = parent;
+	this->context.parent = parent;
 }
 
 ASTNode::~ASTNode()

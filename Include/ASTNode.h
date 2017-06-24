@@ -7,10 +7,14 @@
 #include "../src/Libraries/shared.h"
 #include "parsing.h"
 class ASTTree;
-class NodeData {
+
+class Context
+{
     public:
-        std::map<std::string,std::string> data;
+    unsigned int linenum;
+    ASTNode* parent;
 };
+
 class ASTNode
 {
     public:
@@ -18,11 +22,10 @@ class ASTNode
         ~ASTNode();
         unsigned int line;
         std::string finished_result;
+        Context context;
         std::vector<ASTNode*> branches;
         virtual void assemble();
-        std::map<std::string,std::vector<std::string> > msg; //For 0.6
         std::map<std::pair<std::string,std::string>,bool> vars_defined;
-	ASTNode* parent;
 };
 class VarInitNode : public ASTNode {
     public:
