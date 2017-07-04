@@ -21,12 +21,13 @@ class TokenSegment
         int scope(){return tokens[currentInc].scopenumber;}
         void reset();
         void erase(std::vector<Token>::iterator);
-        TokenSegment createUntil(std::initializer_list<TokenType>,TokenSegment&,bool);
         int current(){ return currentInc; }
         std::vector<Token>::iterator front(){ return tokens.begin(); }
         std::vector<Token>::iterator back(){ return tokens.end(); }
         std::string value();
         std::vector<Token> tokens;
+        TokenSegment eatLine(TokenSegment&);
+        TokenSegment eatIndented(TokenSegment&);
     protected:
     private:
 

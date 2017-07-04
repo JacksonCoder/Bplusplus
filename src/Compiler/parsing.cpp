@@ -8,11 +8,11 @@ TokenSegment eatExpr(TokenSegment& ts)
     TokenSegment ret;
     for(;!ts.end();ts.next())
     {
-        ret.push_back(ts.get());
         if ( ts.type() != NUMBER && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS) //This is really ugly/inefficient. We need methods to organize types
         {
             break;
         }
+        ret.push_back(ts.get());
     }
     return ret;
 }
@@ -22,11 +22,12 @@ TokenSegment eatForHeader(TokenSegment &ts)
     TokenSegment ret;
     for(;!ts.end();ts.next())
     {
-        ret.push_back(ts.get());
+
         if ( ts.type() == TERM )
         {
             break;
         }
+        ret.push_back(ts.get());
     }
     return ret;
 }
@@ -60,45 +61,19 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
     ASTNode* return_node = new CmdSeqNode(parent);
     while(!ts.end())
     {
-        TokenSegment cmd;
-        cmd = ts.createUntil({TERM},ts,false);
-        //if unique command detected, continue
-        if(cmd.size()==0 && !ts.end()){ std::cout<<"b"; ts.next(); continue; }//fixes bug
-        TokenSegment temp;
-        if(IfNode::is(cmd))
+        //see if we can identify command by certain rules
+        if(ts.type() == IFKEYWORD)
         {
-            std::cout<<"Identified as if statement."<<std::endl;
-            temp = ts.createUntil({ENDKEYWORD},ts,true);
+            //if statement
             ts.next();
-            for(temp.reset();!temp.end();temp.next())
-            {
-                cmd.push_back(temp.get());
-            }
-            return_node->branches.push_back(assembleIf(cmd,return_node));
+            TokenSegment expr = eatExpr(ts);
             ts.next();
+            TokenSegment body = ts.eatIndented(ts);
+            std::cout<<"B:"<<body.size()<<std::endl;
+            return_node->branches.push_back(assembleIf(expr,body,return_node));
             continue;
         }
-        else if(ForNode::is(cmd))
-        {
-            std::cout<<"Identified as for statement."<<std::endl;
-            temp = ts.createUntil({ENDKEYWORD},ts,true);
-            ts.next();
-            for(temp.reset();!temp.end();temp.next())
-            {
-                cmd.push_back(temp.get());
-            }
-            return_node->branches.push_back(assembleFor(cmd,return_node));
-            ts.next();
-            continue;
-        }
-        else if(VarInitNode::is(cmd))
-        {
-            std::cout<<"Identified as variable"<<std::endl;
-            return_node->branches.push_back(assembleVarInit(cmd,return_node));
-            ts.next();
-            continue;
-        }
-        fail("Unrecognized command!");
+        fail("Unrecognized command!" + std::to_string((int) ts.type()) + " at " + std::to_string(ts.current()));
     }
     return return_node;
 }
@@ -119,14 +94,11 @@ ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
     return_node->vars_defined[{return_node->vname,return_node->vtype}] = true;
     return return_node;
 }
-ASTNode* assembleIf(TokenSegment ts,ASTNode* parent)
+ASTNode* assembleIf(TokenSegment cmd,TokenSegment body,ASTNode* parent)
 {
     ASTNode* return_node = new IfNode(parent);
-    ts.next();
-    return_node->branches.push_back(assembleExpr(eatExpr(ts),parent)); //expression top
-    ts.next(); //eliminates newline
-    TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
-    return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
+    return_node->branches.push_back(assembleExpr(cmd,return_node));
+    return_node->branches.push_back(assembleCmdSeq(body,return_node));
     return return_node;
 }
 
@@ -150,7 +122,7 @@ int getOperatorPriority(TokenType operatortt)
 
 ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
 {
-    std::cout<<"Starting parsing"<<std::endl;
+    std::cout<<"Creating Expression"<<std::endl;
     ExprNode* return_node = new ExprNode(parent);
     //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
     //unsigned int a = 0;
@@ -260,7 +232,7 @@ ASTNode* assembleFor(TokenSegment ts,ASTNode* parent)
     return_node->vars_defined = return_node->branches[0]->vars_defined;
     working_tree->mapVar(return_node->vars_defined.begin()->first.first,return_node->vars_defined.begin()->first.second,return_node);
     std::cout<<"?:"<<working_tree->check("thing",return_node)<<std::endl;
-    TokenSegment commandseq = ts.createUntil({ENDKEYWORD},ts,true);
+    TokenSegment commandseq = ts.eatIndented(ts);
     return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
     return return_node;
 }

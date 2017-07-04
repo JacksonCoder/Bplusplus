@@ -23,6 +23,7 @@ void TokenLexer::construct(std::string name)
     File in;
     in.read(name);
     std::string code = in.getContents();
+    std::cout << (std::find ( code.begin(), code.end(), '\t') != code.end());
     std::string::iterator iter = code.begin();
     unsigned int scopelevel = 0;
     bool inFunction = false,comment=false;
@@ -49,8 +50,14 @@ void TokenLexer::construct(std::string name)
             i--;
             continue;
         }
-        if(c == '\t' || c == ' ')
+        if(c == ' ')
         {
+            continue;
+        }
+        if(c == '\t')
+        {
+            std::cout<< "Creating tab" << std::endl;
+            out.push_back(Token(TAB,"\t",0));
             continue;
         }
         if(c=='\n')
@@ -145,7 +152,7 @@ void TokenLexer::construct(std::string name)
         }
     }
     bool done = false;
-    unsigned int loopins = 0;
+    unsigned int tabindents = 0;
     while(!done)
     {
     for(int a = 0; a < 2; a++)
@@ -153,7 +160,7 @@ void TokenLexer::construct(std::string name)
     for(int i = 0;i<out.size();i++) //begin lexing
     {
         Token& mod = out.at(i);
-        mod.setScope(loopins);
+
         if(mod.getType() == TERM)
         {
             if(out.at(i-1).getType() == TERM)
@@ -161,10 +168,11 @@ void TokenLexer::construct(std::string name)
                 //blank line
                 out.erase(out.front()+i);
             }
-        }
-        if(mod.getType() == POINTER)
-        {
-            //if(out.at(i-1) != TYPE) mod.setType(MULTIPLY)
+            mod.setScope(tabindents);
+            tabindents = 0;
+            if(i + 1 >= out.size()) continue;
+            for (int iter = i + 1; out.at(iter).getType() == TAB && iter < out.size(); iter++) { tabindents++;}
+            continue;
         }
         if(mod.getType() == TEXT)
         {
@@ -210,21 +218,17 @@ void TokenLexer::construct(std::string name)
                 mod.setType(SAFEKEYWORD);
             }
         }
-        if(mod.getType() == IFKEYWORD || mod.getType() == FORKEYWORD)
-        {
-            loopins ++;
-            std::cout<<"Entering loop";
-        }
-        if(mod.getType() == ENDKEYWORD)
-        {
-            std::cout<<"Exiting loop";
-            loopins --;
-        }
+        mod.setScope(tabindents);
+    }
     }
     done = true;
 
     }
-    if(loopins != 0) fail("Tokenizer Error: Non-closed scope!");
-    }
+    if(tabindents != 0) fail("Tokenizer Error: Non-closed scope!");
+    out.tokens.erase(std::remove_if(
+    out.tokens.begin(), out.tokens.end(),
+    [](Token t) {
+        return t.getType()==TAB;
+    }), out.tokens.end());
     //enforce(out);
 }

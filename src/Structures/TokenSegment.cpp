@@ -14,7 +14,7 @@ void TokenSegment::push_back(Token t)
     tokens.push_back(t);
 }
 void TokenSegment::next() { currentInc++;}
-Token TokenSegment::get(){ std::cout<<currentInc<<std::endl; return tokens[currentInc]; }
+Token TokenSegment::get(){ return tokens[currentInc]; }
 TokenType TokenSegment::type(){return tokens[currentInc].getType(); }
 std::string TokenSegment::value(){return tokens[currentInc].getValue(); }
 int TokenSegment::size(){ return tokens.size(); }
@@ -35,27 +35,22 @@ std::string TokenSegment::getStringValue()
 }
 
         void TokenSegment::append(Token t){ tokens.push_back(t); }
-        TokenSegment TokenSegment::createUntil(std::initializer_list<TokenType> tokentypeil,TokenSegment& ts,bool processing_loop)
+        TokenSegment TokenSegment::eatIndented(TokenSegment& ts)
         {
             TokenSegment ret;
-            bool processing = true;
-            std::cout<<"Numerical form:";
-            for(auto t : ts.tokens)
+            unsigned int scope = ts.at(ts.current()-1).scopenumber;
+             while(ts.scope() > scope && !ts.end())
             {
-                std::cout<<t.getType()<<"-";
+                ret.push_back(ts.get());
+                ts.next();
             }
-            unsigned int current_scope = ts.scope();
-            while(processing && !ts.end())
+            return ret;
+        }
+        TokenSegment TokenSegment::eatLine(TokenSegment& ts)
+        {
+            TokenSegment ret;
+            while(ts.type() != TERM && !ts.end())
             {
-                for(auto tt : tokentypeil)
-                {
-                    if(ts.type() == tt && (ts.scope() == current_scope || !processing_loop))
-                    {
-                        std::cout<<"breaking because ts.type is "<<ts.type()<<" and tt is "<<tt<<std::endl;
-                        processing = false;
-                    }
-                }
-                if(!processing) break;
                 ret.push_back(ts.get());
                 ts.next();
             }

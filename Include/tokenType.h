@@ -37,7 +37,7 @@ enum TokenType
     Self-explanatory. A number token that represent a string of digits.
     */
     ELSEKEYWORD, /* < -- This is not yet implemented */
-    ENDKEYWORD,
+    TAB,
     /*
     The keyword is used to close a loop,function, or class.
     Can you finish the rest of these?
@@ -68,6 +68,7 @@ enum TokenType
     CONSTKEYWORD,
     PTRKEYWORD,
     REFKEYWORD,
-    SAFEKEYWORD
+    SAFEKEYWORD,
+    ENDKEYWORD
 };
 #endif // TOKENTYPE_H_INCLUDED

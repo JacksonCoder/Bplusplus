@@ -30,6 +30,6 @@ clean:
 quick_test:
 	make compiler;make run_example
 memcheck:
-	valgrind --leak-check=full bin/Debug/Compiler compile -source ./Testing/testfile.txt
+	valgrind --leak-check=full ./Compiler compile -source ./Testing/testfile.txt
 all:
 	cd src; clang++ -o ../bin/Debug/Compiler Structures/ASTNode.cpp Structures/ASTTree.cpp Structures/Compiler.cpp Structures/File.cpp Structures/Token.cpp Structures/TokenLexer.cpp Structures/TokenSegment.cpp Structures/Module.cpp Structures/fail.cpp Program/main.cpp -std=c++11 -Wall -stdlib=libc++;cd ..

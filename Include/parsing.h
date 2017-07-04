@@ -10,7 +10,7 @@ ASTNode* assembleCmdSeq(TokenSegment,ASTNode* parent);
 ASTNode* assembleReturnCmd(TokenSegment,ASTNode* parent);
 ASTNode* assembleFor(TokenSegment,ASTNode* parent);
 ASTNode* assembleExpr(TokenSegment,ASTNode* parent);
-ASTNode* assembleIf(TokenSegment,ASTNode* parent);
+ASTNode* assembleIf(TokenSegment,TokenSegment,ASTNode* parent);
 ASTNode* assembleIfHeader(TokenSegment,ASTNode* parent);
 ASTNode* assembleVarInit(TokenSegment,ASTNode* parent);
 ASTNode* assembleEndpoint(TokenSegment,ASTNode* parent);

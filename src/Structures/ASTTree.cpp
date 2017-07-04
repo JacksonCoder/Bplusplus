@@ -24,7 +24,7 @@ void ASTTree::mapVar(std::string name,std::string type,ASTNode* scope)
 
 bool ASTTree::r_check(ASTTree* tree,std::string name,ASTNode* location,unsigned int listloc)
 {
-	if (location->parent == NULL)
+	if (location->context.parent == NULL)
 	{
 		return false;
 	}
@@ -39,7 +39,7 @@ bool ASTTree::r_check(ASTTree* tree,std::string name,ASTNode* location,unsigned 
 			return true;
 		}
 	}
-	return r_check(tree,name,location->parent,std::find(location->parent->branches.begin(),location->parent->branches.end(),location)-location->parent->branches.begin());
+	return r_check(tree,name,location->context.parent,std::find(location->context.parent->branches.begin(),location->context.parent->branches.end(),location)-location->context.parent->branches.begin());
 }
 
 bool ASTTree::check(std::string name,ASTNode* location)
