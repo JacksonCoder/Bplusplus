@@ -7,7 +7,7 @@ class ASTTree;
 class ASTNode;
 ASTNode* assembleTop(TokenSegment,ASTTree*);
 ASTNode* assembleCmdSeq(TokenSegment,ASTNode* parent);
-ASTNode* assembleReturnCmd(TokenSegment,ASTNode* parent);
+ASTNode* assembleReturn(TokenSegment,ASTNode* parent);
 ASTNode* assembleFor(TokenSegment,ASTNode* parent);
 ASTNode* assembleExpr(TokenSegment,ASTNode* parent);
 ASTNode* assembleIf(TokenSegment,TokenSegment,ASTNode* parent);

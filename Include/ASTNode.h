@@ -56,8 +56,10 @@ class CmdSeqNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment);
 };
-class ReturnNode : public ASTNode { //work on constructor implementation another time
+class ReturnNode : public ASTNode {
     public:
+	using ASTNode::ASTNode;
+	ASTNode* ret_expr = NULL;
         virtual void assemble();
         static bool is(TokenSegment);
 };

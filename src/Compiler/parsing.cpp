@@ -73,6 +73,15 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
             return_node->branches.push_back(assembleIf(expr,body,return_node));
             continue;
         }
+	if(ts.type() == RETURNKEYWORD)
+	{
+		//return statement
+		ts.next();
+		TokenSegment expr = eatExpr(ts);
+		ts.next();
+		return_node->branches.push_back(assembleReturn(expr,return_node));
+		continue;
+	}
         fail("Unrecognized command!" + std::to_string((int) ts.type()) + " at " + std::to_string(ts.current()));
     }
     return return_node;
@@ -118,6 +127,13 @@ int getOperatorPriority(TokenType operatortt)
             return 20;
     }
     return 999;
+}
+
+ASTNode* assembleReturn(TokenSegment expr,ASTNode* parent)
+{
+	ReturnNode* return_node = new ReturnNode(parent);
+	return_node->ret_expr = assembleExpr(expr,return_node);	
+	return return_node;
 }
 
 ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
@@ -305,6 +321,12 @@ void ForNode::assemble() {
 void ForHeaderNode::assemble() {
     for(auto b : branches){ b->assemble();}
     finished_result = branches[0]->finished_result + " : " + branches[1]->finished_result;
+}
+
+void ReturnNode::assemble()
+{
+	ret_expr->assemble();
+	finished_result = "return " + ret_expr->finished_result;	
 }
 
 void VarAssignNode::assemble()
