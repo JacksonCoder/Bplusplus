@@ -185,9 +185,17 @@ void TokenLexer::construct(std::string name)
             {
                 mod.setType(ELSEKEYWORD);
             }
-            if(mod.getValue() == "end")
+            if(mod.getValue()=="while")
             {
-                mod.setType(ENDKEYWORD);
+                mod.setType(WHILEKEYWORD);
+            }
+            if(mod.getValue()=="foreach")
+            {
+                mod.setType(FOREACHKEYWORD);
+            }
+            if(mod.getValue()=="switch")
+            {
+                mod.setType(SWITCHKEYWORD);
             }
             if(mod.getValue() == "return")
             {

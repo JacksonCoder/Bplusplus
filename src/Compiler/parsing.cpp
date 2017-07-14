@@ -45,83 +45,16 @@ TokenSegment eatVarKeywords(TokenSegment& ts)
     }
     return ret;
 }
-
-ASTNode* assembleTop(TokenSegment ts,ASTTree* tree)
-{
-    working_tree = tree;
-    ASTNode* return_node = new ASTNode(NULL);
-    return_node = assembleCmdSeq(ts,return_node);
-    return return_node;
-}
-
-
-ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
-{
-    std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
-    ASTNode* return_node = new CmdSeqNode(parent);
-    while(!ts.end())
-      {
-        //see if we can identify command by certain rules
-        if(ts.type() == IFKEYWORD)
-        {
-          std::cout<<"I"<<std::endl;
-            //if statement
-            ts.next();
-            TokenSegment expr = eatExpr(ts);
-            std::cout<<"Expr:"<<expr.getStringValue();
-            ts.next();
-            TokenSegment body = ts.eatIndented(ts);
-            std::cout<<"B:"<<body.size()<<std::endl;
-            return_node->branches.push_back(assembleIf(expr,body,return_node));
-            continue;
-        }
-	if(ts.type() == RETURNKEYWORD)
-	{
-    std::cout<<"R"<<std::endl;
-		//return statement
-		ts.next();
-		TokenSegment expr = eatExpr(ts);
-		ts.next();
-		return_node->branches.push_back(assembleReturn(expr,return_node));
-		continue;
-	}
-        fail("Unrecognized command!" + std::to_string((int) ts.type()) + " at " + std::to_string(ts.current()));
-    }
-    return return_node;
-}
-
-ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
-{
-    VarInitNode* return_node = new VarInitNode(parent);
-    std::cout << "t" <<ts.size() <<std ::endl;
-    //iterate through keywords
-    return_node->isconst = false;
-    for(ts.reset();!ts.end();ts.next())
-    {
-        if(ts.type() == ASYNCKEYWORD) fail("Invalid token!");
-        if(ts.type() == CONSTKEYWORD) return_node->isconst = true;
-    }
-    return_node->vtype = ts.at(ts.size()-2).getValue();
-    return_node->vname = ts.at(ts.size()-1).getValue();
-    return_node->vars_defined[{return_node->vname,return_node->vtype}] = true;
-    return return_node;
-}
-ASTNode* assembleIf(TokenSegment cmd,TokenSegment body,ASTNode* parent)
-{
-    ASTNode* return_node = new IfNode(parent);
-    return_node->branches.push_back(assembleExpr(cmd,return_node));
-    return_node->branches.push_back(assembleCmdSeq(body,return_node));
-    return return_node;
-}
-
-ASTNode* assembleReturn(TokenSegment expr,ASTNode* parent)
-{
-	ReturnNode* return_node = new ReturnNode(parent);
-	return_node->ret_expr = assembleExpr(expr,return_node);
-	return return_node;
-}
 namespace local
 {
+  enum looptypes
+  {
+    IF,
+    FOR,
+    WHILE,
+    SWITCH,
+    FOREACH
+  };
   void stripExtraneousParen(TokenSegment& ts)
   {
     unsigned int paren_in = 0;
@@ -170,6 +103,81 @@ namespace local
     }
     fail("Operator unrecognized!");
   }
+}
+ASTNode* assembleTop(TokenSegment ts,ASTTree* tree)
+{
+    working_tree = tree;
+    ASTNode* return_node = new ASTNode(NULL);
+    return_node = assembleCmdSeq(ts,return_node);
+    return return_node;
+}
+
+
+ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
+{
+    std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
+    ASTNode* return_node = new CmdSeqNode(parent);
+    while(!ts.end())
+      {
+        //see if we can identify command by certain rules
+        if(ts.type() == IFKEYWORD)
+        {
+            //if
+            ts.next();
+            TokenSegment expr = eatExpr(ts);
+            expr.tokens.insert(expr.tokens.begin(),ts.at(0));
+            ts.next();
+            TokenSegment body = ts.eatIndented(ts);
+            return_node->branches.push_back(assembleLoop(expr,body,return_node,local::IF));
+            continue;
+        }
+        if(ts.type() == WHILEKEYWORD)
+        {
+          ts.next();
+          TokenSegment expr = eatExpr(ts);
+          expr.tokens.insert(expr.tokens.begin(),ts.at(0));
+          ts.next();
+          TokenSegment body = ts.eatIndented(ts);
+          return_node->branches.push_back(assembleLoop(expr,body,return_node,local::WHILE));
+          continue;
+        }
+	if(ts.type() == RETURNKEYWORD)
+	{
+    std::cout<<"R"<<std::endl;
+		//return statement
+		ts.next();
+		TokenSegment expr = eatExpr(ts);
+		ts.next();
+		return_node->branches.push_back(assembleReturn(expr,return_node));
+		continue;
+	}
+        fail("Unrecognized command!" + std::to_string((int) ts.type()) + " at " + std::to_string(ts.current()));
+    }
+    return return_node;
+}
+
+ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
+{
+    VarInitNode* return_node = new VarInitNode(parent);
+    std::cout << "t" <<ts.size() <<std ::endl;
+    //iterate through keywords
+    return_node->isconst = false;
+    for(ts.reset();!ts.end();ts.next())
+    {
+        if(ts.type() == ASYNCKEYWORD) fail("Invalid token!");
+        if(ts.type() == CONSTKEYWORD) return_node->isconst = true;
+    }
+    return_node->vtype = ts.at(ts.size()-2).getValue();
+    return_node->vname = ts.at(ts.size()-1).getValue();
+    return_node->vars_defined[{return_node->vname,return_node->vtype}] = true;
+    return return_node;
+}
+
+ASTNode* assembleReturn(TokenSegment expr,ASTNode* parent)
+{
+	ReturnNode* return_node = new ReturnNode(parent);
+	return_node->ret_expr = assembleExpr(expr,return_node);
+	return return_node;
 }
 ASTNode* assembleExpr(TokenSegment expr,ASTNode* parent)
 {
@@ -223,7 +231,28 @@ ASTNode* assembleEndpoint(TokenSegment ts,ASTNode* parent)
     return_node->string_comp = ts.getStringValue();
     return return_node;
 }
-
+ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int which)
+{
+    switch(which)
+    {
+      case local::IF:{
+        IfNode* return_node = new IfNode(parent);
+        head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1); //skips if keyword
+        return_node->condition = (ExprNode*) assembleExpr(head,return_node);
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+        return return_node;
+      }
+      case local::WHILE:
+      {
+        WhileNode* return_node = new WhileNode(parent);
+        head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1); //skips while keyword
+        return_node->condition = (ExprNode*) assembleExpr(head,return_node);
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+        return return_node;
+      }
+    }
+    fail("Unidentified loop!");
+}
 ASTNode* assembleForHeader(TokenSegment ts,ASTNode* parent)
 {
     ASTNode* return_node = new ForHeaderNode(parent);
@@ -287,7 +316,6 @@ ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
 
 
 void ExprNode::assemble(){
-  std::cout<<"WHAT";
     for(auto b : branches){ b->assemble(); std::cout<<b->finished_result<<","<<std::endl; }
     std::cout<<operation<<std::endl;
     if(type == 0){ finished_result = "(" + branches[0]->finished_result + ")"; return;}
@@ -305,8 +333,9 @@ void VarInitNode::assemble(){
     finished_result += vtype + " " + vname;
 }
 void IfNode::assemble(){
-    for(auto b : branches) b->assemble();
-    finished_result = "if " + branches[0]->finished_result + "{\n" + branches[1]->finished_result + "}";
+    condition->assemble();
+    body->assemble();
+    finished_result = "if " + condition->finished_result + "{\n" + body->finished_result + "}";
 }
 void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
@@ -361,4 +390,11 @@ void ParenList::assemble()
 void FuncNode::assemble()
 {
 
+}
+
+void WhileNode::assemble()
+{
+  condition->assemble();
+  body->assemble();
+  finished_result = "while " + condition->finished_result + "{\n" + body->finished_result + "}";
 }

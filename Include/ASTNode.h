@@ -45,14 +45,16 @@ class ExprNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment);
 };
-class IfNode : public ASTNode {
+class CmdSeqNode : public ASTNode {
     public:
 	using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);
 };
-class CmdSeqNode : public ASTNode {
+class IfNode : public ASTNode {
     public:
+      ExprNode* condition;
+      CmdSeqNode* body;
 	using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);
@@ -71,9 +73,46 @@ class DeclNode : public ASTNode {
 };
 class ForNode : public ASTNode {
     public:
+      DeclNode* initializer;
+      ExprNode* condition;
+      //CmdNode* iterator;
+      CmdSeqNode* body;
 	using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);
+};
+class WhileNode : public ASTNode {
+    public:
+      ExprNode* condition;
+      CmdSeqNode* body;
+	    using ASTNode::ASTNode;
+      virtual void assemble();
+      static bool is(TokenSegment);
+};
+class ForEachNode : public ASTNode {
+    public:
+      //VarNode* iterator;
+      ExprNode* container;
+      CmdSeqNode* body;
+	    using ASTNode::ASTNode;
+      virtual void assemble();
+      static bool is(TokenSegment);
+};
+class SwitchNode : public ASTNode {
+    public:
+      ExprNode* condition;
+      CmdSeqNode* body;
+	    using ASTNode::ASTNode;
+      virtual void assemble();
+      static bool is(TokenSegment);
+};
+class IfElseNode : public ASTNode {
+    public:
+      IfNode* ifcomponent;
+      CmdSeqNode* body;
+	    using ASTNode::ASTNode;
+      virtual void assemble();
+      static bool is(TokenSegment);
 };
 class EndpointNode : public ASTNode {
     public:
