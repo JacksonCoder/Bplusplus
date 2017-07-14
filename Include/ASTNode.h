@@ -39,8 +39,9 @@ class VarInitNode : public ASTNode {
 class ExprNode : public ASTNode {
     public:
 	using ASTNode::ASTNode;
-	std::string operation;
-	bool endpoint;
+	unsigned int operation = 0;
+	unsigned int type = 0;
+  std::string endpoint_val;
         virtual void assemble();
         static bool is(TokenSegment);
 };

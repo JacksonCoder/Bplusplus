@@ -2,3 +2,4 @@ if 2==2
 	if 3==2
 		return 5 == 3
 if 3==3
+	return 3 == 4

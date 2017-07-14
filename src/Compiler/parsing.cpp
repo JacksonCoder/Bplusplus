@@ -60,13 +60,15 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
     std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
     ASTNode* return_node = new CmdSeqNode(parent);
     while(!ts.end())
-    {
+      {
         //see if we can identify command by certain rules
         if(ts.type() == IFKEYWORD)
         {
+          std::cout<<"I"<<std::endl;
             //if statement
             ts.next();
             TokenSegment expr = eatExpr(ts);
+            std::cout<<"Expr:"<<expr.getStringValue();
             ts.next();
             TokenSegment body = ts.eatIndented(ts);
             std::cout<<"B:"<<body.size()<<std::endl;
@@ -75,6 +77,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
         }
 	if(ts.type() == RETURNKEYWORD)
 	{
+    std::cout<<"R"<<std::endl;
 		//return statement
 		ts.next();
 		TokenSegment expr = eatExpr(ts);
@@ -111,100 +114,107 @@ ASTNode* assembleIf(TokenSegment cmd,TokenSegment body,ASTNode* parent)
     return return_node;
 }
 
-int getOperatorPriority(TokenType operatortt)
-{
-    switch(operatortt)
-    {
-        case ADD:
-        case SUBTRACT:
-            return 1;
-        case DIVIDE:
-            return 2;
-        case MODULO:
-            return 3;
-        case EQUALS:
-        case NOTEQUALS:
-            return 20;
-    }
-    return 999;
-}
-
 ASTNode* assembleReturn(TokenSegment expr,ASTNode* parent)
 {
 	ReturnNode* return_node = new ReturnNode(parent);
-	return_node->ret_expr = assembleExpr(expr,return_node);	
+	return_node->ret_expr = assembleExpr(expr,return_node);
 	return return_node;
 }
-
-ASTNode* assembleExpr(TokenSegment ts,ASTNode* parent)
+namespace local
 {
-    std::cout<<"Creating Expression"<<std::endl;
-    ExprNode* return_node = new ExprNode(parent);
-    //TODO: check if the expression is binary, singular, or nonoperational (ie. just a variable or constant)
-    //unsigned int a = 0;
-    TokenSegment left_expr,right_expr;
+  void stripExtraneousParen(TokenSegment& ts)
+  {
     unsigned int paren_in = 0;
-    bool paren_wrap = false;
-    while(!ts.end())
+    /*
+    while(ts.end())
     {
-        if(((ts.type() == ADD && ts.type() == SUBTRACT && ts.type() == DIVIDE) && paren_in == 0))
-        {
-            paren_wrap = true;
-        }
-        if(ts.type() == OPAREN){ paren_in++; std::cout<<"+"<<std::endl; }
-        if(ts.type() == CPAREN){ paren_in--; std::cout<<"-"<<std::endl; }
-        ts.next();
+
     }
-    if(paren_wrap) //then we have to unwrap some parentheses
+    */
+    //ts.tokens.erase(ts.tokens.end());
+    //ts.tokens.erase(ts.tokens.begin());
+  }
+  int getOperatorPriority(TokenType operatortt)
+  {
+      switch(operatortt)
+      {
+          case ADD:
+          case SUBTRACT:
+              return 1;
+          case DIVIDE:
+              return 2;
+          case MODULO:
+              return 3;
+          case EQUALS:
+          case NOTEQUALS:
+              return 20;
+      }
+      return 999;
+  }
+  std::string getOperatorAsString(int op)
+  {
+    switch(op)
     {
-        while(left_expr.at(0).getType() == OPAREN && left_expr.at(left_expr.size()-1).getType() == CPAREN)
-        {
-            left_expr.erase(ts.front());
-            left_expr.erase(ts.back()-1);
-            std::cout<<"erasing"<<std::endl;
-        }
+      case ADD:
+        return "+";
+      case SUBTRACT:
+        return "-";
+      case DIVIDE:
+        return "/";
+      case MODULO:
+        return "%";
+      case EQUALS:
+        return "==";
+      case NOTEQUALS:
+        return "!=";
     }
-    //then calculate
-    ts.reset();
-    unsigned int least_prominent_operator_iterator = 0;
-    while(!ts.end())
+    fail("Operator unrecognized!");
+  }
+}
+ASTNode* assembleExpr(TokenSegment expr,ASTNode* parent)
+{
+    ExprNode* return_node = new ExprNode(parent);
+    //strip parentheses
+    local::stripExtraneousParen(expr);
+    //determine type of expr by iterating over TokenSegment
+    unsigned int type = 0,op_iter=0;
+    while(!expr.end())
     {
-        //get the prominent operator
-        std::cout<<"operator priority:"<<getOperatorPriority(ts.type())<<std::endl;
-        if((getOperatorPriority(ts.type()) < getOperatorPriority(ts.at(least_prominent_operator_iterator).getType())) && paren_in == 0)
-        {
-            std::cout<<"Naming least prominent operator!"<<std::endl;
-            least_prominent_operator_iterator = ts.current();
-        }
-        if(ts.type() == OPAREN) paren_in++;
-        if(ts.type() == CPAREN) paren_in--;
-        ts.next();
+      //if(expr.type() == OPAREN) paren_in++;
+      //if(expr.type() == CPAREN) paren_in--;
+      std::cout<<expr.get().getValue()<<":"<<local::getOperatorPriority(expr.type())<<std::endl;
+      if(local::getOperatorPriority(expr.type()) < local::getOperatorPriority(expr.at(op_iter).getType()))
+      {
+        op_iter = expr.current();
+        return_node->operation = expr.type();
+        std::cout<<"Naming:"<<op_iter<<" "<<return_node->operation<<std::endl;
+      }
+      expr.next();
     }
-    if(least_prominent_operator_iterator == 0) //weak, there must be a better way to do this...
-    {
-        return_node->endpoint = true;
-        return_node->branches.push_back(assembleEndpoint(ts,parent));
-        std::cout<<"breaking"<<std::endl;
+      if(op_iter==0)
+      {
+        std::cout<<"Ret"<<std::endl;
+        return_node->endpoint_val = expr.getStringValue();
+        return_node->branches.push_back(assembleEndpoint(expr,return_node));
         return return_node;
-    }
-    return_node->endpoint = false;
-    ts.reset();
-    while(ts.current() < least_prominent_operator_iterator)
-    {
-        left_expr.push_back(ts.get());
-        ts.next();
-    }
-    std::cout<<ts.type()<<std::endl;
-    return_node->operation = ts.value();
-    ts.next();
-    while(!ts.end())
+      }
+      return_node->type = 2;
+        TokenSegment left,right;
+        expr.reset();
+        while(expr.current() != op_iter)
         {
-            right_expr.push_back(ts.get());
-            ts.next();
+          left.tokens.push_back(expr.get());
+          expr.next();
         }
-    return_node->branches.push_back(assembleExpr(left_expr,return_node));
-    return_node->branches.push_back(assembleExpr(right_expr,return_node));
-    return return_node;
+        expr.next(); //skips operator
+        while(!expr.end())
+        {
+          right.tokens.push_back(expr.get());
+          expr.next();
+        }
+        return_node->branches.push_back(assembleExpr(left,return_node));
+        return_node->branches.push_back(assembleExpr(right,return_node));
+        return return_node;
 }
 
 ASTNode* assembleEndpoint(TokenSegment ts,ASTNode* parent)
@@ -277,9 +287,11 @@ ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
 
 
 void ExprNode::assemble(){
-    for(auto b : branches) b->assemble();
-    if(endpoint){ finished_result = branches[0]->finished_result; return;}
-    finished_result += branches[0]->finished_result + operation + branches[1]->finished_result;
+  std::cout<<"WHAT";
+    for(auto b : branches){ b->assemble(); std::cout<<b->finished_result<<","<<std::endl; }
+    std::cout<<operation<<std::endl;
+    if(type == 0){ finished_result = "(" + branches[0]->finished_result + ")"; return;}
+    finished_result += "(" + branches[0]->finished_result + local::getOperatorAsString(operation) + branches[1]->finished_result + ")";
 }
 void ASTNode::assemble(){
     for(auto b : branches)
@@ -294,13 +306,12 @@ void VarInitNode::assemble(){
 }
 void IfNode::assemble(){
     for(auto b : branches) b->assemble();
-    finished_result = "if (" + branches[0]->finished_result + "){\n" + branches[1]->finished_result + "}";
+    finished_result = "if " + branches[0]->finished_result + "{\n" + branches[1]->finished_result + "}";
 }
 void CmdSeqNode::assemble(){
     for(auto b : branches) b->assemble();
     for(auto b : branches)
     {
-        std::cout<<b->finished_result<<std::endl;
         finished_result += b->finished_result + ";\n";
     }
 }
@@ -326,7 +337,7 @@ void ForHeaderNode::assemble() {
 void ReturnNode::assemble()
 {
 	ret_expr->assemble();
-	finished_result = "return " + ret_expr->finished_result;	
+	finished_result = "return " + ret_expr->finished_result;
 }
 
 void VarAssignNode::assemble()
