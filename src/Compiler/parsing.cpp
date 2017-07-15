@@ -52,8 +52,8 @@ namespace local
     TokenSegment ts = tsi;
     ts.next();
     int scope = ts.scope();
-    while(ts.type()!=IFKEYWORD && !ts.end() && ts.scope() >= scope){
-      if(ts.type()==ELSEKEYWORD) return true;
+    while((ts.type()!=IFKEYWORD || ts.scope() != scope) && !ts.end() && ts.scope() >= scope){
+      if(ts.type()==ELSEKEYWORD && ts.scope() == scope) return true;
       ts.next();
     }
     return false;
@@ -153,6 +153,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
               return_node->branches.push_back(assembleLoop(expr,body,return_node,local::IFELSE));
               continue;
             }
+            std::cout<<"I"<<std::endl;
             //if
             TokenSegment expr = eatForHeader(ts);
             ts.next();
@@ -307,11 +308,15 @@ ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int wh
       {
         IfElseNode* return_node = new IfElseNode(parent);
         TokenSegment ifbody;
-        while(body.type() != ELSEKEYWORD)
+        int scope = body.scope() - 1;
+        while(body.type() != ELSEKEYWORD || body.scope() != scope)
         {
+          std::cout<<"g"<<std::endl;
           ifbody.push_back(body.get());
           body.next();
         }
+        std::cout<<body.current()<<std::endl;
+        std::cout<<"IFCOMP:"<<ifbody.getStringValue()<<std::endl;
         return_node->ifcomponent = (IfNode*) assembleLoop(head,ifbody,return_node,local::IF);
         body.next();
         TokenSegment body2;
