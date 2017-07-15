@@ -344,6 +344,14 @@ ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int wh
         return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
         return return_node;
       }
+      case local::CASE:
+      {
+        CaseNode* return_node = new CaseNode(parent);
+        head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1); //skip case keyword
+        return_node->condition = (ExprNode*) assembleExpr(head,return_node);
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+        return return_node;
+      }
       case local::FOR:
       {
         ForNode* return_node = new ForNode(parent);
@@ -502,5 +510,7 @@ void ForNode::assemble()
 
 void CaseNode::assemble()
 {
-
+  condition->assemble();
+  body->assemble();
+  finished_result = "case " + condition->finished_result + ":{\n" + body->finished_result + "}";
 }

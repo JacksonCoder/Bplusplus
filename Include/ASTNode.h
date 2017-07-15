@@ -99,6 +99,7 @@ class ForEachNode : public ASTNode {
       static bool is(TokenSegment);
 };
 class CaseNode : public ASTNode {
+public:
   ExprNode* condition;
   CmdSeqNode* body;
   using ASTNode::ASTNode;
