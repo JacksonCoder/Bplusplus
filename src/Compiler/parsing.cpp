@@ -47,13 +47,26 @@ TokenSegment eatVarKeywords(TokenSegment& ts)
 }
 namespace local
 {
+  bool locateElse(TokenSegment& tsi)
+  {
+    TokenSegment ts = tsi;
+    ts.next();
+    int scope = ts.scope();
+    while(ts.type()!=IFKEYWORD && !ts.end() && ts.scope() >= scope){
+      if(ts.type()==ELSEKEYWORD) return true;
+      ts.next();
+    }
+    return false;
+  }
   enum looptypes
   {
     IF,
     FOR,
     WHILE,
     SWITCH,
-    FOREACH
+    FOREACH,
+    IFELSE,
+    CASE
   };
   void stripExtraneousParen(TokenSegment& ts)
   {
@@ -122,10 +135,26 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
         //see if we can identify command by certain rules
         if(ts.type() == IFKEYWORD)
         {
+            //if or if/else
+            if(local::locateElse(ts))
+            {
+              std::cout<<"IE"<<std::endl;
+              //if/else
+              TokenSegment expr = eatForHeader(ts);
+              ts.next();
+              TokenSegment body = ts.eatIndented(ts);
+              TokenSegment expr2 = eatForHeader(ts); //absorb else statement
+              ts.next();
+              TokenSegment body2 = ts.eatIndented(ts);
+              body.tokens.reserve(body.tokens.size() + body2.tokens.size() + expr2.tokens.size());
+              body.tokens.insert(body.tokens.end(),expr2.tokens.begin(),expr2.tokens.end());
+              body.tokens.insert(body.tokens.end(),body2.tokens.begin(),body2.tokens.end());
+              std::cout<<body.getStringValue()<<std::endl;
+              return_node->branches.push_back(assembleLoop(expr,body,return_node,local::IFELSE));
+              continue;
+            }
             //if
-            ts.next();
-            TokenSegment expr = eatExpr(ts);
-            expr.tokens.insert(expr.tokens.begin(),ts.at(0));
+            TokenSegment expr = eatForHeader(ts);
             ts.next();
             TokenSegment body = ts.eatIndented(ts);
             return_node->branches.push_back(assembleLoop(expr,body,return_node,local::IF));
@@ -133,12 +162,44 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
         }
         if(ts.type() == WHILEKEYWORD)
         {
-          ts.next();
-          TokenSegment expr = eatExpr(ts);
-          expr.tokens.insert(expr.tokens.begin(),ts.at(0));
+          //while
+          TokenSegment expr = eatForHeader(ts);
           ts.next();
           TokenSegment body = ts.eatIndented(ts);
           return_node->branches.push_back(assembleLoop(expr,body,return_node,local::WHILE));
+          continue;
+        }
+        if(ts.type() == SWITCHKEYWORD)
+        {
+          //switch
+          TokenSegment expr = eatForHeader(ts);
+          ts.next();
+          TokenSegment body = ts.eatIndented(ts);
+          return_node->branches.push_back(assembleLoop(expr,body,return_node,local::SWITCH));
+          continue;
+        }
+        if(ts.type() == FORKEYWORD)
+        {
+          TokenSegment head = eatForHeader(ts);
+          ts.next();
+          TokenSegment body = ts.eatIndented(ts);
+          return_node->branches.push_back(assembleLoop(head,body,return_node,local::FOR));
+          continue;
+        }
+        if(ts.type() == FOREACHKEYWORD)
+        {
+          TokenSegment head = eatForHeader(ts);
+          ts.next();
+          TokenSegment body = ts.eatIndented(ts);
+          return_node->branches.push_back(assembleLoop(head,body,return_node,local::FOREACH));
+          continue;
+        }
+        if(ts.type() == CASEKEYWORD)
+        {
+          TokenSegment head = eatForHeader(ts);
+          ts.next();
+          TokenSegment body = ts.eatIndented(ts);
+          return_node->branches.push_back(assembleLoop(head,body,return_node,local::CASE));
           continue;
         }
 	if(ts.type() == RETURNKEYWORD)
@@ -242,6 +303,26 @@ ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int wh
         return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
         return return_node;
       }
+      case local::IFELSE:
+      {
+        IfElseNode* return_node = new IfElseNode(parent);
+        TokenSegment ifbody;
+        while(body.type() != ELSEKEYWORD)
+        {
+          ifbody.push_back(body.get());
+          body.next();
+        }
+        return_node->ifcomponent = (IfNode*) assembleLoop(head,ifbody,return_node,local::IF);
+        body.next();
+        TokenSegment body2;
+        while(!body.end())
+        {
+          body2.push_back(body.get());
+          body.next();
+        }
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body2,return_node);
+        return return_node;
+      }
       case local::WHILE:
       {
         WhileNode* return_node = new WhileNode(parent);
@@ -250,46 +331,46 @@ ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int wh
         return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
         return return_node;
       }
+      case local::SWITCH:
+      {
+        SwitchNode* return_node = new SwitchNode(parent);
+        head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1); //skip switch keyword
+        return_node->condition = (ExprNode*) assembleExpr(head,return_node);
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+        return return_node;
+      }
+      case local::FOR:
+      {
+        ForNode* return_node = new ForNode(parent);
+        head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1);
+        TokenSegment initializer = eatExpr(head); //This is an expression until we add variables
+        head.next();
+        TokenSegment condition = eatExpr(head);
+        head.next();
+        TokenSegment iterator; //Added Later
+        return_node->initializer = (ExprNode*) assembleExpr(initializer,return_node);
+        return_node->condition = (ExprNode*) assembleExpr(condition,return_node);
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+        return return_node;
+      }
+      /*
+      case local::FOREACH:
+      {
+        ForNode* return_node = new ForNode(parent);
+        head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1);
+        TokenSegment initializer = head.eatExpr(); //This is an expression until we add variables
+        ts.next();
+        TokenSegment condition = head.eatExpr();
+        ts.next();
+        TokenSegment iterator; //Added Later
+        return_node->initializer = (ExprNode*) assembleExpr(initializer,return_node);
+        return_node->condition = (ExprNode*) assembleExpr(condition,return_node);
+        return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+        return return_node;
+      }
+      */ //To be added after variables
     }
     fail("Unidentified loop!");
-}
-ASTNode* assembleForHeader(TokenSegment ts,ASTNode* parent)
-{
-    ASTNode* return_node = new ForHeaderNode(parent);
-    TokenSegment var = eatVarKeywords(ts);
-    std::cout<<var.getStringValue()<<std::endl;
-    var.push_back(ts.get());
-    ts.next();
-    var.push_back(ts.get());
-    return_node->branches.push_back(assembleVarInit(var,return_node));
-    return_node->vars_defined = return_node->branches[0]->vars_defined;
-    //our current iterator should be the variable name
-    ts.next();ts.next();
-    TokenSegment secondpart;
-    while(!ts.end())
-    {
-        secondpart.push_back(ts.get());
-        ts.next();
-    }
-    return_node->branches.push_back(assembleEndpoint(secondpart,return_node));
-    return return_node;
-}
-
-ASTNode* assembleFor(TokenSegment ts,ASTNode* parent)
-{
-    ASTNode* return_node = new ForNode(parent);
-    ts.next();
-    TokenSegment head = eatForHeader(ts);
-    std::cout<<head.getStringValue()<<std::endl;
-    //do stuff with the header
-    return_node->branches.push_back(assembleForHeader(head,return_node));
-    ts.next();
-    return_node->vars_defined = return_node->branches[0]->vars_defined;
-    working_tree->mapVar(return_node->vars_defined.begin()->first.first,return_node->vars_defined.begin()->first.second,return_node);
-    std::cout<<"?:"<<working_tree->check("thing",return_node)<<std::endl;
-    TokenSegment commandseq = ts.eatIndented(ts);
-    return_node->branches.push_back(assembleCmdSeq(commandseq,return_node));
-    return return_node;
 }
 
 ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
@@ -348,15 +429,6 @@ void CmdSeqNode::assemble(){
 void EndpointNode::assemble() {
     finished_result = string_comp;
 }
-void ForNode::assemble() {
-    std::cout<<branches[1]->branches.size()<<std::endl;
-    for(auto b : branches)
-    {
-        b->assemble();
-    }
-    finished_result = "for (" + branches[0]->finished_result + ")";
-    finished_result += "{\n" + branches[1]->finished_result + "}";
-}
 
 void ForHeaderNode::assemble() {
     for(auto b : branches){ b->assemble();}
@@ -397,4 +469,33 @@ void WhileNode::assemble()
   condition->assemble();
   body->assemble();
   finished_result = "while " + condition->finished_result + "{\n" + body->finished_result + "}";
+}
+void ForEachNode::assemble()
+{
+
+}
+void SwitchNode::assemble()
+{
+  condition->assemble();
+  body->assemble();
+  finished_result = "switch " + condition->finished_result + "{\n" + body->finished_result + "}";
+}
+void IfElseNode::assemble()
+{
+  ifcomponent->assemble();
+  body->assemble();
+  finished_result = ifcomponent->finished_result + "\nelse{\n" + body->finished_result + "}";
+}
+
+void ForNode::assemble()
+{
+  initializer->assemble();
+  condition->assemble();
+  body->assemble();
+  finished_result = "for (" + initializer->finished_result + ";" + condition->finished_result + ";){\n" + body->finished_result + "}";
+}
+
+void CaseNode::assemble()
+{
+
 }

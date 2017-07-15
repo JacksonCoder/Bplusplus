@@ -73,7 +73,7 @@ class DeclNode : public ASTNode {
 };
 class ForNode : public ASTNode {
     public:
-      DeclNode* initializer;
+      ExprNode* initializer; //DeclNode later
       ExprNode* condition;
       //CmdNode* iterator;
       CmdSeqNode* body;
@@ -97,6 +97,13 @@ class ForEachNode : public ASTNode {
 	    using ASTNode::ASTNode;
       virtual void assemble();
       static bool is(TokenSegment);
+};
+class CaseNode : public ASTNode {
+  ExprNode* condition;
+  CmdSeqNode* body;
+  using ASTNode::ASTNode;
+  virtual void assemble();
+  static bool is(TokenSegment);
 };
 class SwitchNode : public ASTNode {
     public:

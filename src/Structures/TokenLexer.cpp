@@ -60,6 +60,11 @@ void TokenLexer::construct(std::string name)
             out.push_back(Token(TAB,"\t",0));
             continue;
         }
+        if(c == ';')
+        {
+            out.push_back(Token(SEMICOLON,";",0));
+            continue;
+        }
         if(c=='\n')
         {
             scopelevel = 0;
@@ -200,6 +205,10 @@ void TokenLexer::construct(std::string name)
             if(mod.getValue() == "return")
             {
                 mod.setType(RETURNKEYWORD);
+            }
+            if(mod.getValue() == "case")
+            {
+              mod.setType(CASEKEYWORD);
             }
             if(mod.getValue() == "for")
             {
