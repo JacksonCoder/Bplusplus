@@ -7,7 +7,7 @@
 #include "../src/Libraries/shared.h"
 #include "parsing.h"
 class ASTTree;
-
+class ExprNode;
 class Context
 {
     public:
@@ -35,6 +35,16 @@ class VarInitNode : public ASTNode {
 	bool isconst;
         virtual void assemble();
         static bool is(TokenSegment);
+};
+class VarDeclNode : public ASTNode {
+public:
+  bool isconst;
+  std::string vname;
+  std::string vtype;
+  ExprNode* value;
+  using ASTNode::ASTNode;
+  virtual void assemble();
+  static bool is(TokenSegment);
 };
 class ExprNode : public ASTNode {
     public:
@@ -73,7 +83,7 @@ class DeclNode : public ASTNode {
 };
 class ForNode : public ASTNode {
     public:
-      ExprNode* initializer; //DeclNode later
+      VarDeclNode* initializer; //DeclNode later
       ExprNode* condition;
       //CmdNode* iterator;
       CmdSeqNode* body;

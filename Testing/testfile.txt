@@ -1,5 +1,2 @@
-﻿switch 3 == 3
-	case 0
-		return 0
-	case 1
-		return 1
+﻿for int j = 0; j != 3;
+	return 4

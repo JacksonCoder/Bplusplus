@@ -111,20 +111,20 @@ void TokenLexer::construct(std::string name)
         if(c == '=' && code[i+1] == '=')
         {
             out.push_back(Token(EQUALS,"==",0));
+            i++;
             continue;
         }
         if(c == '!' && code[i+1] == '=')
         {
             out.push_back(Token(NOTEQUALS,"!=",0));
+            i++;
             continue;
         }
-        /*
         if(c == '=')
         {
-            out.push_back(Token(EQUALS,"=",0));
+            out.push_back(Token(ASSIGNMENT,"=",0));
             continue;
         }
-        */
         if(c == '@')
         {
             out.push_back(Token(AT,"@",0));

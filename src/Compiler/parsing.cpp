@@ -8,13 +8,28 @@ TokenSegment eatExpr(TokenSegment& ts)
     TokenSegment ret;
     for(;!ts.end();ts.next())
     {
-        if ( ts.type() != NUMBER && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS) //This is really ugly/inefficient. We need methods to organize types
+        if ( ts.type() != NUMBER && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS && ts.type() != TEXT) //This is really ugly/inefficient. We need methods to organize types
         {
             break;
         }
         ret.push_back(ts.get());
     }
     return ret;
+}
+
+TokenSegment eatVar(TokenSegment& ts)
+{
+  TokenSegment ret;
+  while(!ts.end())
+  {
+  if(ts.type() != TEXT && ts.type() != NUMBER && ts.type() != ASSIGNMENT && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS && ts.type() != TEXT)
+  {
+    break;
+  }
+  ret.push_back(ts.get());
+  ts.next();
+}
+return ret;
 }
 
 TokenSegment eatForHeader(TokenSegment &ts)
@@ -235,6 +250,32 @@ ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
     return return_node;
 }
 
+ASTNode* assembleVarInitA(TokenSegment ts,ASTNode* parent)
+{
+  VarDeclNode* return_node = new VarDeclNode(parent);
+  return_node->isconst = false;
+  for(ts.reset();!ts.end();ts.next())
+  {
+      if(ts.type() == ASYNCKEYWORD) fail("Invalid token!");
+      if(ts.type() == CONSTKEYWORD) return_node->isconst = true;
+  }
+  ts.reset();
+  return_node->vtype = ts.get().getValue(); //change it later to iterate over type
+  ts.next();
+  return_node->vname = ts.get().getValue();
+  ts.next();
+  ts.next();
+  TokenSegment assignment;
+  while(!ts.end())
+  {
+    assignment.push_back(ts.get());
+    ts.next();
+  }
+  return_node->value = (ExprNode*) assembleExpr(assignment,return_node);
+  return_node->vars_defined[{return_node->vname,return_node->vtype}] = true;
+  return return_node;
+}
+
 ASTNode* assembleReturn(TokenSegment expr,ASTNode* parent)
 {
 	ReturnNode* return_node = new ReturnNode(parent);
@@ -356,12 +397,11 @@ ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int wh
       {
         ForNode* return_node = new ForNode(parent);
         head.tokens.erase(head.tokens.begin(),head.tokens.begin()+1);
-        TokenSegment initializer = eatExpr(head); //This is an expression until we add variables
+        TokenSegment initializer = eatVar(head); //This is an expression until we add variables
         head.next();
         TokenSegment condition = eatExpr(head);
-        head.next();
         TokenSegment iterator; //Added Later
-        return_node->initializer = (ExprNode*) assembleExpr(initializer,return_node);
+        return_node->initializer = (VarDeclNode*) assembleVarInitA(initializer,return_node);
         return_node->condition = (ExprNode*) assembleExpr(condition,return_node);
         return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
         return return_node;
@@ -513,4 +553,11 @@ void CaseNode::assemble()
   condition->assemble();
   body->assemble();
   finished_result = "case " + condition->finished_result + ":{\n" + body->finished_result + "}";
+}
+
+void VarDeclNode::assemble()
+{
+  value->assemble();
+  if(isconst) finished_result = "const ";
+  finished_result += vname + " " + vtype + " = " + value->finished_result;
 }
