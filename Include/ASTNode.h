@@ -165,12 +165,17 @@ class VarNode : public ASTNode {
 };
 class ParenList : public ASTNode {
     public:
+      std::vector<ASTNode*> parameters;
     using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);
 };
 class FuncNode : public ASTNode {
     public:
+    std::string name;
+    std::string type; //create typenode later
+    ParenList* arguments;
+    CmdSeqNode* body;
     using ASTNode::ASTNode;
         virtual void assemble();
         static bool is(TokenSegment);

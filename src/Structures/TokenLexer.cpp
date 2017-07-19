@@ -234,6 +234,10 @@ void TokenLexer::construct(std::string name)
             {
                 mod.setType(SAFEKEYWORD);
             }
+            if(mod.getValue() == "func")
+            {
+              mod.setType(FUNCTIONKEYWORD);
+            }
         }
         mod.setScope(tabindents);
     }

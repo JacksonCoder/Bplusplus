@@ -3,6 +3,28 @@
 
 ASTTree* working_tree;
 
+TokenSegment eatUntil(std::initializer_list<TokenType> tlist,TokenSegment& ts)
+{
+  TokenSegment ret;
+  bool processing = true;
+  while(!ts.end() && processing)
+  {
+    for(auto il : tlist)
+    {
+      if(ts.type() == il){
+        processing = false;
+        break;
+      }
+    }
+    if(processing)
+    {
+      ret.push_back(ts.get());
+      ts.next()
+    }
+  }
+  return ret;
+}
+
 TokenSegment eatExpr(TokenSegment& ts)
 {
     TokenSegment ret;
@@ -216,6 +238,23 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
           ts.next();
           TokenSegment body = ts.eatIndented(ts);
           return_node->branches.push_back(assembleLoop(head,body,return_node,local::CASE));
+          continue;
+        }
+        if(ts.type() == FUNCTIONKEYWORD)
+        {
+          ts.next();
+          TokenSegment type;
+          type.push_back(ts.get());
+          ts.next();
+          TokenSegment name;
+          type.push_back(ts.get());
+          ts.next(); //skips open parentheses
+          // eat until cparen reached
+          TokenSegment parenlist = eatUntil({CPAREN},ts);
+          ts.next();
+          ts.next();
+          TokenSegment body = ts.eatIndented(ts);
+          return_node->branches.push_back(assembleFunc(type,name,parenlist,body,return_node));
           continue;
         }
 	if(ts.type() == RETURNKEYWORD)
@@ -448,6 +487,10 @@ ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
     return return_node;
 }
 
+ASTNode* assembleFunc(TokenSegment type,TokenSegment name,TokenSegment list,TokenSegment body,ASTNode* parent)
+{
+
+}
 
 void ExprNode::assemble(){
     for(auto b : branches){ b->assemble(); std::cout<<b->finished_result<<","<<std::endl; }
