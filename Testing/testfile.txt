@@ -1,2 +1,2 @@
-﻿for int j = 0; j != 3;
-	return 4
+﻿func int main(int j,const int v)
+	return 0

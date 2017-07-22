@@ -19,7 +19,7 @@ TokenSegment eatUntil(std::initializer_list<TokenType> tlist,TokenSegment& ts)
     if(processing)
     {
       ret.push_back(ts.get());
-      ts.next()
+      ts.next();
     }
   }
   return ret;
@@ -247,7 +247,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
           type.push_back(ts.get());
           ts.next();
           TokenSegment name;
-          type.push_back(ts.get());
+          name.push_back(ts.get());
           ts.next(); //skips open parentheses
           // eat until cparen reached
           TokenSegment parenlist = eatUntil({CPAREN},ts);
@@ -475,21 +475,32 @@ ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
     return return_node;
 }
 
-ASTNode* assembleFunc(TokenSegment ts,ASTNode* parent)
-{
-    FuncNode* return_node = new FuncNode(parent);
-    return return_node;
-}
-
 ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
 {
     ParenList* return_node = new ParenList(parent);
+
+    while(!ts.end())
+    {
+      TokenSegment piece;
+      while(!ts.end() && ts.type() != COMMA)
+      {
+        piece.push_back(ts.get());
+        ts.next();
+      }
+      return_node->branches.push_back(assembleVarInit(piece,return_node));
+      ts.next();
+    }
     return return_node;
 }
 
 ASTNode* assembleFunc(TokenSegment type,TokenSegment name,TokenSegment list,TokenSegment body,ASTNode* parent)
 {
-
+    FuncNode* return_node = new FuncNode(parent);
+    return_node->type = type.getStringValue();
+    return_node->name = name.getStringValue();
+    return_node->arguments = (ParenList*) assembleParenList(list,return_node);
+    return_node->body = (CmdSeqNode*) assembleCmdSeq(body,return_node);
+    return return_node;
 }
 
 void ExprNode::assemble(){
@@ -552,12 +563,7 @@ void VarNode::assemble()
 
 void ParenList::assemble()
 {
-    for(auto b : branches){ b->assemble(); finished_result += b->finished_result;}
-}
-
-void FuncNode::assemble()
-{
-
+    for(int i = 0; i < branches.size();i++){ branches[i]->assemble(); finished_result += branches[i]->finished_result;if(i+1 < branches.size()) finished_result += ',';}
 }
 
 void WhileNode::assemble()
@@ -603,4 +609,11 @@ void VarDeclNode::assemble()
   value->assemble();
   if(isconst) finished_result = "const ";
   finished_result += vname + " " + vtype + " = " + value->finished_result;
+}
+
+void FuncNode::assemble()
+{
+  arguments->assemble();
+  body->assemble();
+  finished_result = type +" "+ name + "(" + arguments->finished_result + "){\n" + body->finished_result + "}";
 }
