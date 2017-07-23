@@ -38,8 +38,8 @@ void Compiler::standardCompileSetup()
         out = *iter;
         arguments.erase(iter-2,iter);
     }
-     if(sourceCount<1) fail("No output file specified");
-    if(sourceCount>1) fail("You can only declare one output file");
+    if(outCount<1) fail("No output file specified");
+    if(outCount>1) fail("You can only declare one output file");
     if(std::find(arguments.begin(),arguments.end(),"-debug")!=arguments.end())
     {
         std::cout<<"Debug mode enabled\n";
@@ -47,7 +47,7 @@ void Compiler::standardCompileSetup()
     }
     sourceModule = new Module(in,out);
     sourceModule->build();
-    //sourceModule->output();
+    sourceModule->output();
 }
 
 void Compiler::run()

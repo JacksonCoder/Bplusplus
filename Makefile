@@ -24,9 +24,9 @@ ASTTree.o: src/Structures/ASTTree.cpp Include/ASTTree.h
 parsing.o: src/Compiler/parsing.cpp Include/parsing.h
 	clang++ -c -o parsing.o src/Compiler/parsing.cpp --std=c++1y  -g
 run_example:
-	./Compiler compile -source ./Testing/testfile.txt
+	./Compiler compile -source ./Testing/testfile.txt -out testing/output.cpp
 test_example:
-	./Compiler compile -source ./Testing/testfile.txt -debug
+	./Compiler compile -source ./Testing/testfile.txt -out testing/output.cpp -debug
 clean:
 	rm *.o
 quick_test:

@@ -1,7 +1,6 @@
 #include "../../Include/File.h"
 File::~File()
 {
-    stream.close();
 }
 
 void File::read(std::string filename)
@@ -14,5 +13,16 @@ void File::read(std::string filename)
             getline(stream,temp);
             contents+=temp+'\n';
     }
-    std::cout<<contents<<std::endl;
+    stream.close();
+}
+
+void File::write(std::string filename,std::string output)
+{
+  stream.open(filename);
+  if(!stream.is_open())
+    stream.open(filename, std::ios::in | std::ios::out | std::ios::trunc);
+  if(!stream.is_open()){ fail("Error on writing to file:" + filename);}
+  stream<<output;
+  debug("Wrote sucessfully to file " + filename);
+  stream.close();
 }

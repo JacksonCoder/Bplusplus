@@ -11,6 +11,7 @@ class File
         ~File();
         std::string getContents() { return contents; }
         void read(std::string);
+        void write(std::string,std::string);
     protected:
     private:
         std::fstream stream; //!< Member variable "stream"
