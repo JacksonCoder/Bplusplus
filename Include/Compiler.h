@@ -3,7 +3,7 @@
 #include "../src/Libraries/shared.h"
 #include "TokenLexer.h"
 #include "Module.h"
-#define VERSION_NUMBER 0.3
+#define VERSION_NUMBER "0.3.12"
 class Compiler
 {
     public:
@@ -12,6 +12,7 @@ class Compiler
         void run();
         void lex();
         void finish();
+        void help();
     protected:
     private:
         Module* sourceModule;
