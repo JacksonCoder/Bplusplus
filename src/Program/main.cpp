@@ -4,7 +4,7 @@
 #include "../../Include/ASTTree.h"
 #include "../../Include/Compiler.h"
 #include "../../Include/TokenSegment.h"
-
+bool isdebug;
 
 int main(int argc,char** argv)
 {
@@ -12,7 +12,7 @@ int main(int argc,char** argv)
     #ifndef TESTING
     Compiler c(argc,argv);
     c.run();
-    
+
     //std::cout << "Compilation sucessful!\n";
     #else
     //put tests

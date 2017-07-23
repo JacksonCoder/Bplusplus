@@ -40,6 +40,11 @@ void Compiler::standardCompileSetup()
     }
      if(sourceCount<1) fail("No output file specified");
     if(sourceCount>1) fail("You can only declare one output file");
+    if(std::find(arguments.begin(),arguments.end(),"-debug")!=arguments.end())
+    {
+        std::cout<<"Debug mode enabled\n";
+        isdebug = true;
+    }
     sourceModule = new Module(in,out);
     sourceModule->build();
     //sourceModule->output();

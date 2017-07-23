@@ -165,7 +165,7 @@ ASTNode* assembleTop(TokenSegment ts,ASTTree* tree)
 
 ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
 {
-    std::cout<<"Checking command sequence "<<ts.getStringValue()<<std::endl;
+    debug("Checking command sequence "+ ts.getStringValue());
     ASTNode* return_node = new CmdSeqNode(parent);
     while(!ts.end())
       {
@@ -175,7 +175,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
             //if or if/else
             if(local::locateElse(ts))
             {
-              std::cout<<"IE"<<std::endl;
+              debug("IE");
               //if/else
               TokenSegment expr = eatForHeader(ts);
               ts.next();
@@ -186,11 +186,11 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
               body.tokens.reserve(body.tokens.size() + body2.tokens.size() + expr2.tokens.size());
               body.tokens.insert(body.tokens.end(),expr2.tokens.begin(),expr2.tokens.end());
               body.tokens.insert(body.tokens.end(),body2.tokens.begin(),body2.tokens.end());
-              std::cout<<body.getStringValue()<<std::endl;
+              debug(body.getStringValue());
               return_node->branches.push_back(assembleLoop(expr,body,return_node,local::IFELSE));
               continue;
             }
-            std::cout<<"I"<<std::endl;
+            debug("I");
             //if
             TokenSegment expr = eatForHeader(ts);
             ts.next();
@@ -259,7 +259,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
         }
 	if(ts.type() == RETURNKEYWORD)
 	{
-    std::cout<<"R"<<std::endl;
+    debug("R");
 		//return statement
 		ts.next();
 		TokenSegment expr = eatExpr(ts);
@@ -275,7 +275,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
 ASTNode* assembleVarInit(TokenSegment ts,ASTNode* parent)
 {
     VarInitNode* return_node = new VarInitNode(parent);
-    std::cout << "t" <<ts.size() <<std ::endl;
+    debug("t" + std::to_string(ts.size()));
     //iterate through keywords
     return_node->isconst = false;
     for(ts.reset();!ts.end();ts.next())
@@ -332,18 +332,16 @@ ASTNode* assembleExpr(TokenSegment expr,ASTNode* parent)
     {
       //if(expr.type() == OPAREN) paren_in++;
       //if(expr.type() == CPAREN) paren_in--;
-      std::cout<<expr.get().getValue()<<":"<<local::getOperatorPriority(expr.type())<<std::endl;
       if(local::getOperatorPriority(expr.type()) < local::getOperatorPriority(expr.at(op_iter).getType()))
       {
         op_iter = expr.current();
         return_node->operation = expr.type();
-        std::cout<<"Naming:"<<op_iter<<" "<<return_node->operation<<std::endl;
       }
       expr.next();
     }
       if(op_iter==0)
       {
-        std::cout<<"Ret"<<std::endl;
+        debug("Ret");
         return_node->endpoint_val = expr.getStringValue();
         return_node->branches.push_back(assembleEndpoint(expr,return_node));
         return return_node;
@@ -391,12 +389,12 @@ ASTNode* assembleLoop(TokenSegment head,TokenSegment body,ASTNode* parent,int wh
         int scope = body.scope() - 1;
         while(body.type() != ELSEKEYWORD || body.scope() != scope)
         {
-          std::cout<<"g"<<std::endl;
+          debug("g");
           ifbody.push_back(body.get());
           body.next();
         }
-        std::cout<<body.current()<<std::endl;
-        std::cout<<"IFCOMP:"<<ifbody.getStringValue()<<std::endl;
+        debug(std::to_string(body.current()));
+        debug("IFCOMP:"+ifbody.getStringValue());
         return_node->ifcomponent = (IfNode*) assembleLoop(head,ifbody,return_node,local::IF);
         body.next();
         TokenSegment body2;
@@ -470,7 +468,7 @@ ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
     ASTNode* return_node = new VarNode(parent);
     if(!working_tree->check(ts.getStringValue(),return_node))
     {
-        std::cout<<"???"<<std::endl;
+        debug("???");
     }
     return return_node;
 }
@@ -504,8 +502,7 @@ ASTNode* assembleFunc(TokenSegment type,TokenSegment name,TokenSegment list,Toke
 }
 
 void ExprNode::assemble(){
-    for(auto b : branches){ b->assemble(); std::cout<<b->finished_result<<","<<std::endl; }
-    std::cout<<operation<<std::endl;
+    for(auto b : branches){ b->assemble(); debug(b->finished_result+","); }
     if(type == 0){ finished_result = "(" + branches[0]->finished_result + ")"; return;}
     finished_result += "(" + branches[0]->finished_result + local::getOperatorAsString(operation) + branches[1]->finished_result + ")";
 }

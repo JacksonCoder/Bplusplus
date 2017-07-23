@@ -1,2 +1,4 @@
-﻿func int main(int j,const int v)
+﻿func int main(int argc,const int argv)
+	if argc == 2
+		return 1
 	return 0
