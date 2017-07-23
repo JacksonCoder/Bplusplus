@@ -96,4 +96,5 @@ void Compiler::help()
 Compiler::~Compiler()
 {
     //clean up
+    delete sourceModule;
 }
