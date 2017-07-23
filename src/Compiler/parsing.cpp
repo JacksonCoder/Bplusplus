@@ -249,6 +249,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
           TokenSegment name;
           name.push_back(ts.get());
           ts.next(); //skips open parentheses
+          ts.next();
           // eat until cparen reached
           TokenSegment parenlist = eatUntil({CPAREN},ts);
           ts.next();
@@ -269,6 +270,7 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
 	}
         fail("Unrecognized command!" + std::to_string((int) ts.type()) + " at " + std::to_string(ts.current()));
     }
+    debug("Finished!");
     return return_node;
 }
 
@@ -476,7 +478,8 @@ ASTNode* assembleVarNode(TokenSegment ts,ASTNode* parent)
 ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
 {
     ParenList* return_node = new ParenList(parent);
-
+    debug("Assembling ParenList");
+    debug(ts.getStringValue());
     while(!ts.end())
     {
       TokenSegment piece;
@@ -485,7 +488,7 @@ ASTNode* assembleParenList(TokenSegment ts,ASTNode* parent)
         piece.push_back(ts.get());
         ts.next();
       }
-      return_node->branches.push_back(assembleVarInit(piece,return_node));
+      return_node->parameters.push_back(assembleVarInit(piece,return_node));
       ts.next();
     }
     return return_node;
@@ -560,7 +563,7 @@ void VarNode::assemble()
 
 void ParenList::assemble()
 {
-    for(int i = 0; i < branches.size();i++){ branches[i]->assemble(); finished_result += branches[i]->finished_result;if(i+1 < branches.size()) finished_result += ',';}
+    for(int i = 0; i < parameters.size();i++){ parameters[i]->assemble(); finished_result += parameters[i]->finished_result;if(i+1 < branches.size()) finished_result += ',';}
 }
 
 void WhileNode::assemble()
@@ -610,6 +613,7 @@ void VarDeclNode::assemble()
 
 void FuncNode::assemble()
 {
+  debug("Here");
   arguments->assemble();
   body->assemble();
   finished_result = type +" "+ name + "(" + arguments->finished_result + "){\n" + body->finished_result + "}";
