@@ -30,7 +30,7 @@ TokenSegment eatExpr(TokenSegment& ts)
     TokenSegment ret;
     for(;!ts.end();ts.next())
     {
-        if ( ts.type() != NUMBER && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS && ts.type() != TEXT) //This is really ugly/inefficient. We need methods to organize types
+        if ( ts.type() != NUMBER && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS && ts.type() != TEXT && ts.type() != QUOTE) //This is really ugly/inefficient. We need methods to organize types
         {
             break;
         }
@@ -44,7 +44,7 @@ TokenSegment eatVar(TokenSegment& ts)
   TokenSegment ret;
   while(!ts.end())
   {
-  if(ts.type() != TEXT && ts.type() != NUMBER && ts.type() != ASSIGNMENT && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS && ts.type() != TEXT)
+  if(ts.type() != TEXT && ts.type() != NUMBER && ts.type() != ASSIGNMENT && ts.type() != OPAREN && ts.type() != CPAREN && ts.type() != MULTIPLY && ts.type() != MODULO && ts.type() != DIVIDE && ts.type() != SUBTRACT && ts.type() != ADD && ts.type() != EQUALS && ts.type() != NOTEQUALS && ts.type() != TEXT && ts.type() != QUOTE)
   {
     break;
   }
@@ -268,6 +268,17 @@ ASTNode* assembleCmdSeq(TokenSegment ts,ASTNode* parent)
 		return_node->branches.push_back(assembleReturn(expr,return_node));
 		continue;
 	}
+      if(ts.type() == INCLUDEKEYWORD)
+      {
+        bool islocal = false;
+        debug("Parsing include!");
+        ts.next();
+        TokenSegment includefile = eatUntil({TERM},ts);
+        if(includefile.type() == QUOTE) islocal = true;
+        ts.next();
+          return_node->branches.push_back(assembleInclude(includefile,islocal,return_node));
+        continue;
+      }
         fail("Unrecognized command!" + std::to_string((int) ts.type()) + " at " + std::to_string(ts.current()));
     }
     debug("Finished!");
@@ -504,6 +515,22 @@ ASTNode* assembleFunc(TokenSegment type,TokenSegment name,TokenSegment list,Toke
     return return_node;
 }
 
+ASTNode* assembleInclude(TokenSegment file,bool islocal, ASTNode* parent)
+{
+  if (islocal)
+  {
+  IncludeLocalNode* return_node = new IncludeLocalNode(parent);
+  return_node->filename = file.getStringValue();
+  debug(return_node->filename);
+  return return_node;
+}
+  else{
+    IncludeNode* return_node = new IncludeNode(parent);
+    return_node->filename = file.getStringValue();
+    return return_node;
+  }
+}
+
 void ExprNode::assemble(){
     for(auto b : branches){ b->assemble(); debug(b->finished_result+","); }
     if(type == 0){ finished_result = "(" + branches[0]->finished_result + ")"; return;}
@@ -617,4 +644,14 @@ void FuncNode::assemble()
   arguments->assemble();
   body->assemble();
   finished_result = type +" "+ name + "(" + arguments->finished_result + "){\n" + body->finished_result + "}";
+}
+
+void IncludeNode::assemble()
+{
+  finished_result = "#include <" + filename + ">";
+}
+
+void IncludeLocalNode::assemble()
+{
+  finished_result = "#include " + filename;
 }

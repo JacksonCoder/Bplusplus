@@ -18,4 +18,5 @@ ASTNode* assembleVarAssign(TokenSegment,ASTNode* parent);
 ASTNode* assembleVarNode(TokenSegment,ASTNode* parent);
 ASTNode* assembleParenList(TokenSegment,ASTNode* parent);
 ASTNode* assembleFunc(TokenSegment,TokenSegment,TokenSegment,TokenSegment,ASTNode* parent);
+ASTNode* assembleInclude(TokenSegment,bool,ASTNode*);
 #endif //PARSING_H

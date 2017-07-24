@@ -238,6 +238,14 @@ void TokenLexer::construct(std::string name)
             {
               mod.setType(FUNCTIONKEYWORD);
             }
+            if(mod.getValue() == "include")
+            {
+              mod.setType(INCLUDEKEYWORD);
+            }
+            if(mod.getValue() == "import")
+            {
+              mod.setType(IMPORTKEYWORD);
+            }
         }
         mod.setScope(tabindents);
     }

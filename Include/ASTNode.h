@@ -180,4 +180,18 @@ class FuncNode : public ASTNode {
         virtual void assemble();
         static bool is(TokenSegment);
 };
+class IncludeNode : public ASTNode {
+public:
+  using ASTNode::ASTNode;
+  std::string filename;
+  virtual void assemble();
+  static bool is(TokenSegment);
+};
+class IncludeLocalNode : public ASTNode {
+public:
+  using ASTNode::ASTNode;
+  std::string filename;
+  virtual void assemble();
+  static bool is(TokenSegment);
+};
 #endif // ASTNode_H

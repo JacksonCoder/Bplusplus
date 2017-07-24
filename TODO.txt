@@ -1,6 +1,6 @@
 +++++++++++++++++TO DO+++++++++++++++++++
 - Add all loops (DONE)
-- Add functions (INPROGRESS)
+- Add functions (DONE)
 - Add variable parsing (DONE)
-- Add command line args
+- Add command line args (INPROGRESS)
 (To finish 0.3)

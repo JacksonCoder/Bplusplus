@@ -1,2 +1,4 @@
-﻿func int main()
+﻿include iostream
+func int main()
 	return 0
+
